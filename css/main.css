@@ -1,41 +1,53 @@
 /* Main Game Styles */
 body {
     margin: 0;
-    padding: 20px;
+    padding: 0;
     background: #1a1a1a;
     color: white;
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    min-height: 100vh;
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin: 20px 0;
     text-align: center;
 }
 
-/* Game Container with Debug Panel */
+/* Main Layout Container */
 #gameContainer {
     display: flex;
-    gap: 20px;
+    flex: 1;
+    position: relative;
+    justify-content: center;
     align-items: flex-start;
+    padding-top: 20px;
 }
 
-/* Debug Panel */
+/* Debug Panel - Fixed to left side */
 .debug-panel {
-    width: 300px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 15px;
-    max-height: 600px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 350px;
+    background: rgba(0, 0, 0, 0.9);
+    border-right: 2px solid #444;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.debug-panel:not(.hidden) {
+    transform: translateX(0);
 }
 
 .debug-panel.hidden {
-    display: none;
+    transform: translateX(-100%);
 }
 
 .debug-panel h3 {
@@ -56,9 +68,9 @@ h1 {
     font-size: 12px;
     color: #0f0;
     overflow-y: auto;
-    max-height: 500px;
     white-space: pre-wrap;
     word-wrap: break-word;
+    min-height: 0; /* Allow flex shrinking */
 }
 
 .debug-clear-btn {
@@ -76,11 +88,18 @@ h1 {
     background: #444;
 }
 
-/* Game Canvas */
+/* Game Canvas - Always centered regardless of debug panel */
 #gameCanvas {
     border: 2px solid #444;
     background: #000;
     display: block;
+    margin-left: 0;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* When debug panel is visible, add left margin to game canvas for spacing */
+body.debug-panel-visible #gameCanvas {
+    margin-left: 370px; /* debug panel width + padding */
 }
 
 #gameCanvas.playing {

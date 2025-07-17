@@ -10,6 +10,7 @@
     - no infrastructure impediments, either ours or theirs, e.g. geoblocking etc.
 - It takes a concerted effort to review the stuff the model produces, when it just pops up more or less all there and functioning.
 - The sprint function was a funny experiment. Got the acceleration and especially the sound generation going very quickly, but the logic is *very* buggy. As expected; it's some complicated stuff.
+- It's also pretty good for bulk accessibility and compatibility coverage.
 - I think there's a lot of promise to this workflow, provided we can meet the following criteria (at least, there are sure to be other things that haven't occurred to me):
     - Manual tweaks and changes *must* be a common, expected part of the workflow.
         - If Cline produces a feature that is 95% good but needs that last 5% sorted out, we need to be able to make those changes ourselves rather than wrangling with the prompt for hours to refine Cline's output until it's 100%.

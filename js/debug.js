@@ -57,6 +57,9 @@ export class DebugLogger {
             debugPanel.classList.remove('hidden');
         }
         
+        // Add class to body to trigger game canvas margin
+        document.body.classList.add('debug-panel-visible');
+        
         if (debugToggle) {
             debugToggle.textContent = 'ON';
             debugToggle.setAttribute('aria-pressed', 'true');
@@ -76,6 +79,9 @@ export class DebugLogger {
         if (debugPanel) {
             debugPanel.classList.add('hidden');
         }
+        
+        // Remove class from body to remove game canvas margin
+        document.body.classList.remove('debug-panel-visible');
         
         if (debugToggle) {
             debugToggle.textContent = 'OFF';
