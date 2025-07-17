@@ -93,17 +93,17 @@ read_file (each file) → cross-reference information → identify gaps
 
 ### Task Completion Workflow
 ```
-complete task → verify results → git add → git commit with descriptive message
+complete task → verify results → git add → git commit with descriptive message → git status
 ```
 
 ### Phased Development Workflow
 ```
-plan phases → execute phase → document phase progress → git commit phase → next phase
+plan phases → execute phase → document phase progress → git commit phase → git status → next phase
 ```
 
-### Git Commit Timeout Handling
+### Git Commit Workflow
 ```
-execute git commit → wait max 3 seconds → if no response, continue as completed
+execute git commit → wait max 3 seconds → if no response, continue as completed → git status
 ```
 
 ## Performance Considerations
