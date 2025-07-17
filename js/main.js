@@ -275,15 +275,8 @@ class Game {
         this.ctx.textAlign = 'center';
         this.ctx.fillText('SPEEDBALL', this.canvas.width / 2, 200);
         
-        this.ctx.font = '24px Arial';
-        this.ctx.fillText('Intelligent Adaptive Gameplay', this.canvas.width / 2, 240);
-        
         this.ctx.font = '18px Arial';
-        this.ctx.fillText('Click to Start', this.canvas.width / 2, 350);
-        
-        this.ctx.font = '14px Arial';
-        this.ctx.fillStyle = '#aaa';
-        this.ctx.fillText('The AI will adapt to help you succeed!', this.canvas.width / 2, 400);
+        this.ctx.fillText('Click to Start', this.canvas.width / 2, 280);
     }
 
     drawGameOver() {

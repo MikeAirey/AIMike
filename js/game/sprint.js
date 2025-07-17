@@ -10,7 +10,7 @@ export class SprintSystem {
         this.config = {
             accelerationPeriodMs: 500,
             defaultSpeed: 5,
-            topSpeed: 50,
+            topSpeed: 15,
             
             // Calculate multiplier dynamically
             get speedMultiplier() {
@@ -91,7 +91,7 @@ export class SprintSystem {
     resetSettings() {
         this.config.accelerationPeriodMs = 500;
         this.config.defaultSpeed = 5;
-        this.config.topSpeed = 50;
+        this.config.topSpeed = 15;
         
         // Update UI
         this.initializeControls();

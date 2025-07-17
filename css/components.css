@@ -2,8 +2,8 @@
 
 /* Configuration Panel */
 #configurationPanel {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: 15px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     text-align: center;
@@ -13,26 +13,28 @@
 
 #configurationPanel h3 {
     margin-top: 0;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     color: #fff;
+    font-size: 18px;
 }
 
 .config-section {
     display: inline-block;
     vertical-align: top;
-    margin: 0 20px 20px 20px;
-    padding: 15px;
+    margin: 0 10px 15px 10px;
+    padding: 12px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 140px;
 }
 
 .config-section h4 {
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     color: #fff;
-    font-size: 16px;
+    font-size: 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 5px;
+    padding-bottom: 4px;
 }
 
 .toggle-button {
@@ -67,26 +69,26 @@
 }
 
 .control-group {
-    margin: 10px 15px;
-    display: inline-block;
-    vertical-align: top;
+    margin: 8px 0;
+    display: block;
+    text-align: left;
 }
 
 .control-group label {
     display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
+    margin-bottom: 4px;
+    font-size: 13px;
     color: #ccc;
 }
 
 .control-group input {
-    padding: 5px 8px;
+    padding: 4px 6px;
     border-radius: 3px;
     border: 1px solid #444;
     background: #333;
     color: white;
-    width: 80px;
-    font-size: 14px;
+    width: 70px;
+    font-size: 13px;
 }
 
 .control-group input:focus {
@@ -95,19 +97,21 @@
 }
 
 .control-buttons {
-    margin-top: 15px;
+    margin-top: 12px;
 }
 
 .control-buttons button {
     background: rgba(255, 255, 255, 0.1);
     color: white;
     border: 1px solid #444;
-    padding: 8px 16px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    margin: 0 5px;
+    font-size: 12px;
+    margin: 2px;
     transition: background-color 0.2s;
+    display: block;
+    width: 100%;
 }
 
 .control-buttons button:hover {

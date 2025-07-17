@@ -33,9 +33,12 @@ export class DebugLogger {
             clearButton.addEventListener('click', this.clearLog.bind(this));
         }
         
-        // Load debug state from localStorage
+        // Load debug state from localStorage, default to enabled
         const savedState = localStorage.getItem('speedball_debug_enabled');
-        if (savedState === 'true') {
+        if (savedState === 'false') {
+            this.disableDebug();
+        } else {
+            // Default to enabled if no saved state or if saved state is 'true'
             this.enableDebug();
         }
     }
