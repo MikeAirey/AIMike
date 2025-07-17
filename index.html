@@ -211,18 +211,21 @@
             height: 15,
             speed: 8,
             normalWidth: 100,
+            usingMouse: false,
             
             update() {
-                // Arrow key controls
-                if (game.keys['ArrowLeft'] && this.x > 0) {
-                    this.x -= this.speed;
-                }
-                if (game.keys['ArrowRight'] && this.x < canvas.width - this.width) {
-                    this.x += this.speed;
+                // Arrow key controls (only if not using mouse)
+                if (!this.usingMouse) {
+                    if (game.keys['ArrowLeft'] && this.x > 0) {
+                        this.x -= this.speed;
+                    }
+                    if (game.keys['ArrowRight'] && this.x < canvas.width - this.width) {
+                        this.x += this.speed;
+                    }
                 }
                 
-                // Mouse controls (with bounds checking)
-                if (game.mouse.x >= 0 && game.mouse.x <= canvas.width) {
+                // Mouse controls (only when mouse is actively being used)
+                if (this.usingMouse && game.mouse.x >= 0 && game.mouse.x <= canvas.width) {
                     this.x = Math.max(0, Math.min(canvas.width - this.width, game.mouse.x - this.width / 2));
                 }
             },
@@ -883,6 +886,11 @@
         document.addEventListener('keydown', (e) => {
             game.keys[e.code] = true;
             
+            // Switch to keyboard control when arrow keys are pressed
+            if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+                paddle.usingMouse = false;
+            }
+            
             if (e.code === 'Space') {
                 e.preventDefault();
                 if (gameState === 'playing') {
@@ -901,6 +909,11 @@
             const rect = canvas.getBoundingClientRect();
             game.mouse.x = e.clientX - rect.left;
             game.mouse.y = e.clientY - rect.top;
+            
+            // Switch to mouse control when mouse moves
+            if (gameState === 'playing') {
+                paddle.usingMouse = true;
+            }
         });
         
         canvas.addEventListener('click', (e) => {
