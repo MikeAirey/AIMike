@@ -13,35 +13,37 @@
     <div id="gameAnnouncements" aria-live="polite" aria-atomic="true" class="sr-only"></div>
     <div id="gameStatus" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
     
-    <div id="gameContainer">
-        <!-- Debug Log Panel -->
-        <div id="debugPanel" class="debug-panel">
-            <h3>Debug Log</h3>
-            <div id="debugLog" class="debug-log"></div>
-            <button id="clearDebugLog" class="debug-clear-btn">Clear Log</button>
+    <!-- Debug Log Panel - Overlay that doesn't affect main layout -->
+    <div id="debugPanel" class="debug-panel">
+        <h3>Debug Log</h3>
+        <div id="debugLog" class="debug-log"></div>
+        <button id="clearDebugLog" class="debug-clear-btn">Clear Log</button>
+    </div>
+    
+    <!-- Main Game Container - Central columnar layout -->
+    <div id="mainContainer">
+        <div id="gameContainer">
+            <canvas id="gameCanvas" width="800" height="600" 
+                    role="application" 
+                    aria-label="speedball Game - Use arrow keys to move paddle, space to pause, enter or click to launch ball"
+                    aria-describedby="gameInfo instructions"
+                    tabindex="0"></canvas>
         </div>
         
-        <canvas id="gameCanvas" width="800" height="600" 
-                role="application" 
-                aria-label="speedball Game - Use arrow keys to move paddle, space to pause, enter or click to launch ball"
-                aria-describedby="gameInfo instructions"
-                tabindex="0"></canvas>
-    </div>
-    
-    <div id="gameInfo" role="status" aria-live="polite">
-        <div>Score: <span id="score">0</span></div>
-        <div>Lives: <span id="lives">3</span></div>
-        <div>Level: <span id="level">1</span></div>
-        <div>Accuracy: <span id="accuracy">0%</span></div>
-    </div>
-    
-    <div id="powerUps" aria-live="polite" aria-label="Active power-ups"></div>
-    
-    <div id="instructions">
-        Use ← → arrow keys or mouse to move paddle | SPACE to pause | ENTER or Click to launch ball/start game | SHIFT to sprint
-    </div>
-    
-    <div id="configurationPanel">
+        <div id="gameInfo" role="status" aria-live="polite">
+            <div>Score: <span id="score">0</span></div>
+            <div>Lives: <span id="lives">3</span></div>
+            <div>Level: <span id="level">1</span></div>
+            <div>Accuracy: <span id="accuracy">0%</span></div>
+        </div>
+        
+        <div id="powerUps" aria-live="polite" aria-label="Active power-ups"></div>
+        
+        <div id="instructions">
+            Use ← → arrow keys or mouse to move paddle | SPACE to pause | ENTER or Click to launch ball/start game | SHIFT to sprint
+        </div>
+        
+        <div id="configurationPanel">
         <h3>Configuration</h3>
         
         <!-- Debug Controls -->
@@ -82,6 +84,7 @@
                 <button id="resetSprintConfig">Reset to Defaults</button>
             </div>
         </div>
+    </div>
     </div>
 
     <script type="module" src="js/main.js"></script>

@@ -32,6 +32,15 @@
 - Clear log functionality
 - Auto-scrolling and limited history (100 entries)
 
+### Layout & UI Structure ✅ (Latest)
+- Fixed debug log layout issues - no longer moves main game window
+- All UI components (except debug log) contained in central columnar container
+- Debug log positioned as true overlay that doesn't obstruct main UI
+- Restructured HTML with proper #mainContainer wrapper
+- Enhanced debug panel styling with backdrop blur
+- Removed layout-shifting margin logic from debug system
+- Main game content remains perfectly centered regardless of debug panel state
+
 ### Configuration UI ✅ (Latest)
 - Unified configuration panel at bottom of screen
 - Debug controls section

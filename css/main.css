@@ -15,24 +15,33 @@ h1 {
     text-align: center;
 }
 
-/* Main Layout Container */
-#gameContainer {
+/* Main Container - Central columnar layout for all UI components except debug */
+#mainContainer {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     flex: 1;
-    position: relative;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* Debug Panel - Fixed to left side */
+/* Game Container - Houses the canvas */
+#gameContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Debug Panel - Overlay that doesn't affect main layout */
 .debug-panel {
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
     width: 350px;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     border-right: 2px solid #444;
     padding: 20px;
     display: flex;
@@ -40,6 +49,7 @@ h1 {
     z-index: 1000;
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
+    backdrop-filter: blur(5px);
 }
 
 .debug-panel:not(.hidden) {
@@ -88,18 +98,11 @@ h1 {
     background: #444;
 }
 
-/* Game Canvas - Always centered regardless of debug panel */
+/* Game Canvas - Always centered in main container */
 #gameCanvas {
     border: 2px solid #444;
     background: #000;
     display: block;
-    margin-left: 0;
-    transition: margin-left 0.3s ease-in-out;
-}
-
-/* When debug panel is visible, add left margin to game canvas for spacing */
-body.debug-panel-visible #gameCanvas {
-    margin-left: 370px; /* debug panel width + padding */
 }
 
 #gameCanvas.playing {
