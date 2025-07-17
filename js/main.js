@@ -185,7 +185,6 @@ class Game {
         this.ballSystem.update(this.canvas, this.paddle, this.aiAnalysis.getMetrics());
         this.powerUpSystem.update(this.paddle, this.ballSystem);
         this.particleSystem.update();
-        this.sprintSystem.update(this.ballSystem.getAllBalls());
         
         // Check brick collisions for all balls
         this.ballSystem.getAllBalls().forEach(ball => {
@@ -200,6 +199,9 @@ class Game {
                 this.aiAnalysis.trackBrickHit();
             }
         });
+        
+        // Update sprint system after brick collisions
+        this.sprintSystem.update(this.ballSystem.getAllBalls());
         
         // Check if no balls left
         if (!this.ballSystem.hasActiveBalls()) {

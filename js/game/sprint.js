@@ -143,6 +143,11 @@ export class SprintSystem {
     }
 
     update(balls) {
+        // Stop audio every time unless actively accelerating or decelerating
+        if (!this.state.isAccelerating && !this.state.isDecelerating) {
+            this.stopAudio();
+        }
+        
         if (!this.state.isActive) return;
         
         const currentTime = performance.now();
