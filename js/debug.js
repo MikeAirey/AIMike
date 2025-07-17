@@ -2,33 +2,9 @@
  * Debug Logging System
  * Handles debug log output to the debug panel
  */
-
-// Null Object Pattern - No-op logger for performance when debugging is disabled
-class NullLogger {
-    log() {}
-    info() {}
-    warn() {}
-    error() {}
-    game() {}
-    ai() {}
-    physics() {}
-    input() {}
-    audio() {}
-    clearLog() {}
-    updateLogDisplay() {}
-    toggleDebug() {
-        // Switch to real logger
-        debugLogger = new DebugLogger();
-    }
-    enableDebug() {
-        debugLogger = new DebugLogger();
-    }
-    disableDebug() {}
-}
-
 export class DebugLogger {
     constructor() {
-        this.enabled = true; // Real logger is always enabled when created
+        this.enabled = true;
         this.logElement = null;
         this.maxLogEntries = 100;
         this.logEntries = [];
@@ -96,6 +72,7 @@ export class DebugLogger {
     }
 
     disableDebug() {
+        this.enabled = false;
         const debugPanel = document.getElementById('debugPanel');
         const debugToggle = document.getElementById('debugToggle');
         
@@ -110,9 +87,6 @@ export class DebugLogger {
         
         // Save state to localStorage
         localStorage.setItem('speedball_debug_enabled', 'false');
-        
-        // Switch to null logger for performance
-        debugLogger = new NullLogger();
     }
 
     log(message, category = 'info', data = null) {
@@ -161,40 +135,47 @@ export class DebugLogger {
         this.log('Debug log cleared', 'system');
     }
 
-    // Convenience methods for different log levels
+    // Convenience methods for different log levels - optimized for performance
     info(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'info', data);
     }
 
     warn(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'warn', data);
     }
 
     error(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'error', data);
     }
 
     game(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'game', data);
     }
 
     ai(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'ai', data);
     }
 
     physics(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'physics', data);
     }
 
     input(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'input', data);
     }
 
     audio(message, data = null) {
+        if (!this.enabled) return;
         this.log(message, 'audio', data);
     }
 }
 
-// Create global debug logger instance - start with appropriate logger based on saved state
-const savedState = localStorage.getItem('speedball_debug_enabled');
-export let debugLogger = (savedState === 'false') ? new NullLogger() : new DebugLogger();
+// Create global debug logger instance
+export const debugLogger = new DebugLogger();
