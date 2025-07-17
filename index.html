@@ -204,8 +204,22 @@
             }
         };
         
-        // Multi-ball system
-        const balls = []; // Additional balls for multi-ball power-up
+        // Unified ball system
+        const balls = []; // All balls in the game
+        
+        // Ball factory function
+        function createBall(x, y, onPaddle = false) {
+            return {
+                x: x,
+                y: y,
+                radius: 8,
+                dx: 0,
+                dy: 0,
+                speed: 5,
+                normalSpeed: 5,
+                onPaddle: onPaddle
+            };
+        }
         
         // Paddle Object
         const paddle = {
@@ -249,68 +263,69 @@
             }
         };
         
-        // Ball Object
-        const ball = {
-            x: 400,
-            y: 530,
-            radius: 8,
-            dx: 0,
-            dy: 0,
-            speed: 5,
-            normalSpeed: 5,
-            onPaddle: true,
-            
-            update() {
-                if (this.onPaddle) {
+        // Unified ball update system
+        function updateBalls() {
+            // Update each ball
+            for (let i = balls.length - 1; i >= 0; i--) {
+                const ball = balls[i];
+                
+                if (ball.onPaddle) {
                     // Ball follows paddle when on paddle
-                    this.x = paddle.x + paddle.width / 2;
-                    this.y = paddle.y - this.radius;
-                    return;
+                    ball.x = paddle.x + paddle.width / 2;
+                    ball.y = paddle.y - ball.radius;
+                    continue;
                 }
                 
                 // Move ball
-                this.x += this.dx;
-                this.y += this.dy;
+                ball.x += ball.dx;
+                ball.y += ball.dy;
                 
                 // Wall collisions
-                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
-                    this.dx = -this.dx;
-                    this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) {
+                    ball.dx = -ball.dx;
+                    ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x));
                 }
                 
-                if (this.y - this.radius <= 0) {
-                    this.dy = -this.dy;
-                    this.y = this.radius;
+                if (ball.y - ball.radius <= 0) {
+                    ball.dy = -ball.dy;
+                    ball.y = ball.radius;
                 }
                 
                 // Paddle collision
-                if (this.y + this.radius >= paddle.y && 
-                    this.y - this.radius <= paddle.y + paddle.height &&
-                    this.x >= paddle.x && 
-                    this.x <= paddle.x + paddle.width) {
+                if (ball.y + ball.radius >= paddle.y && 
+                    ball.y - ball.radius <= paddle.y + paddle.height &&
+                    ball.x >= paddle.x && 
+                    ball.x <= paddle.x + paddle.width) {
                     
                     // Calculate bounce angle based on where ball hits paddle
-                    const hitPos = (this.x - paddle.x) / paddle.width;
+                    const hitPos = (ball.x - paddle.x) / paddle.width;
                     const bounceAngle = (hitPos - 0.5) * Math.PI * 0.6; // Max 54 degrees
                     
-                    this.dx = Math.sin(bounceAngle) * this.speed;
-                    this.dy = -Math.cos(bounceAngle) * this.speed;
-                    this.y = paddle.y - this.radius;
+                    ball.dx = Math.sin(bounceAngle) * ball.speed;
+                    ball.dy = -Math.cos(bounceAngle) * ball.speed;
+                    ball.y = paddle.y - ball.radius;
                     
                     // Track paddle hits for AI
                     playerMetrics.paddleHits++;
                     playerMetrics.totalBallBounces++;
                 }
                 
-                // Ball falls off bottom
-                if (this.y > canvas.height) {
-                    this.respawn();
+                // Remove balls that fall off bottom
+                if (ball.y > canvas.height) {
+                    balls.splice(i, 1);
                 }
-            },
+            }
             
-            draw() {
+            // If no balls left, respawn
+            if (balls.length === 0) {
+                respawn();
+            }
+        }
+        
+        function drawBalls() {
+            balls.forEach(ball => {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
                 ctx.fillStyle = '#fff';
                 ctx.fill();
                 
@@ -319,66 +334,48 @@
                 ctx.shadowBlur = 10;
                 ctx.fill();
                 ctx.shadowBlur = 0;
-            },
-            
-            launch() {
-                if (this.onPaddle) {
-                    this.onPaddle = false;
-                    this.dx = (Math.random() - 0.5) * 4;
-                    this.dy = -this.speed;
-                }
-            },
-            
-            respawn() {
-                // Only lose a life if ALL balls are gone (main ball + multi-balls)
-                if (balls.length === 0) {
-                    // No other balls in play, lose a life
-                    game.lives--;
-                    playerMetrics.ballsLost++;
-                    playerMetrics.consecutiveDeaths++;
-                    playerMetrics.missedBalls++;
-                    
-                    // Track paddle miss for AI analysis
-                    aiAnalysis.trackPaddleMiss(this.x, paddle.x, paddle.width);
-                    
-                    if (game.lives <= 0) {
-                        gameState = 'gameOver';
-                        // Show cursor when game ends
-                        canvas.classList.remove('playing');
-                        return;
-                    }
-                    
-                    // Brief pause before respawn
-                    gameState = 'ballLost';
-                    setTimeout(() => {
-                        if (game.lives > 0) {
-                            this.onPaddle = true;
-                            this.x = paddle.x + paddle.width / 2;
-                            this.y = paddle.y - this.radius;
-                            this.dx = 0;
-                            this.dy = 0;
-                            gameState = 'playing';
-                        }
-                    }, 1000);
-                } else {
-                    // Other balls still in play, just remove this ball
-                    this.onPaddle = true;
-                    this.x = paddle.x + paddle.width / 2;
-                    this.y = paddle.y - this.radius;
-                    this.dx = 0;
-                    this.dy = 0;
-                }
-            },
-            
-            reset() {
-                this.onPaddle = true;
-                this.x = paddle.x + paddle.width / 2;
-                this.y = paddle.y - this.radius;
-                this.dx = 0;
-                this.dy = 0;
-                this.speed = this.normalSpeed;
+            });
+        }
+        
+        function launchBall() {
+            // Launch the first ball on paddle
+            const ballOnPaddle = balls.find(ball => ball.onPaddle);
+            if (ballOnPaddle) {
+                ballOnPaddle.onPaddle = false;
+                ballOnPaddle.dx = (Math.random() - 0.5) * 4;
+                ballOnPaddle.dy = -ballOnPaddle.speed;
             }
-        };
+        }
+        
+        function respawn() {
+            // Lose a life
+            game.lives--;
+            playerMetrics.ballsLost++;
+            playerMetrics.consecutiveDeaths++;
+            playerMetrics.missedBalls++;
+            
+            if (game.lives <= 0) {
+                gameState = 'gameOver';
+                // Show cursor when game ends
+                canvas.classList.remove('playing');
+                return;
+            }
+            
+            // Brief pause before respawn
+            gameState = 'ballLost';
+            setTimeout(() => {
+                if (game.lives > 0) {
+                    // Add new ball on paddle
+                    balls.push(createBall(paddle.x + paddle.width / 2, paddle.y - 8, true));
+                    gameState = 'playing';
+                }
+            }, 1000);
+        }
+        
+        function resetBalls() {
+            balls.length = 0;
+            balls.push(createBall(paddle.x + paddle.width / 2, paddle.y - 8, true));
+        }
         
         // Brick System
         const bricks = [];
@@ -485,35 +482,28 @@
                 letter: 'M',
                 duration: 0, // Permanent until balls are lost
                 effect: () => {
-                    // Split current ball into 3 balls
-                    if (!ball.onPaddle) {
-                        const originalDx = ball.dx;
-                        const originalDy = ball.dy;
+                    // Find a ball that's not on paddle to split
+                    const activeBall = balls.find(b => !b.onPaddle);
+                    if (activeBall) {
+                        const originalDx = activeBall.dx;
+                        const originalDy = activeBall.dy;
                         
                         // Create two additional balls
-                        balls.push({
-                            x: ball.x,
-                            y: ball.y,
-                            radius: ball.radius,
-                            dx: originalDx * 0.7 + 2,
-                            dy: originalDy,
-                            speed: ball.speed,
-                            onPaddle: false
-                        });
+                        balls.push(createBall(activeBall.x, activeBall.y, false));
+                        const newBall1 = balls[balls.length - 1];
+                        newBall1.dx = originalDx * 0.7 + 2;
+                        newBall1.dy = originalDy;
+                        newBall1.speed = activeBall.speed;
                         
-                        balls.push({
-                            x: ball.x,
-                            y: ball.y,
-                            radius: ball.radius,
-                            dx: originalDx * 0.7 - 2,
-                            dy: originalDy,
-                            speed: ball.speed,
-                            onPaddle: false
-                        });
+                        balls.push(createBall(activeBall.x, activeBall.y, false));
+                        const newBall2 = balls[balls.length - 1];
+                        newBall2.dx = originalDx * 0.7 - 2;
+                        newBall2.dy = originalDy;
+                        newBall2.speed = activeBall.speed;
                         
                         // Modify original ball
-                        ball.dx = originalDx;
-                        ball.dy = originalDy;
+                        activeBall.dx = originalDx;
+                        activeBall.dy = originalDy;
                     }
                 }
             },
@@ -523,12 +513,14 @@
                 letter: 'S',
                 duration: 20000,
                 effect: () => {
-                    ball.speed = ball.normalSpeed * 0.7;
-                    balls.forEach(b => b.speed = ball.speed);
+                    balls.forEach(b => {
+                        b.speed = b.normalSpeed * 0.7;
+                    });
                 },
                 reset: () => {
-                    ball.speed = ball.normalSpeed;
-                    balls.forEach(b => b.speed = ball.normalSpeed);
+                    balls.forEach(b => {
+                        b.speed = b.normalSpeed;
+                    });
                 }
             }
         };
@@ -548,77 +540,6 @@
             });
         }
         
-        function checkBrickCollisions() {
-            for (let i = 0; i < bricks.length; i++) {
-                const brick = bricks[i];
-                if (brick.destroyed) continue;
-                
-                // Check if ball intersects with brick
-                if (ball.x + ball.radius > brick.x &&
-                    ball.x - ball.radius < brick.x + brick.width &&
-                    ball.y + ball.radius > brick.y &&
-                    ball.y - ball.radius < brick.y + brick.height) {
-                    
-                    // Determine collision side
-                    const ballCenterX = ball.x;
-                    const ballCenterY = ball.y;
-                    const brickCenterX = brick.x + brick.width / 2;
-                    const brickCenterY = brick.y + brick.height / 2;
-                    
-                    const deltaX = ballCenterX - brickCenterX;
-                    const deltaY = ballCenterY - brickCenterY;
-                    
-                    const intersectX = Math.abs(deltaX) - (brick.width / 2 + ball.radius);
-                    const intersectY = Math.abs(deltaY) - (brick.height / 2 + ball.radius);
-                    
-                    // Bounce ball based on collision side
-                    if (intersectX > intersectY) {
-                        ball.dx = -ball.dx;
-                    } else {
-                        ball.dy = -ball.dy;
-                    }
-                    
-                    // Damage brick
-                    brick.hits--;
-                    playerMetrics.bricksHit++;
-                    playerMetrics.totalBallBounces++;
-                    
-                    if (brick.hits <= 0) {
-                        brick.destroyed = true;
-                        game.score += brick.points;
-                        
-                        // Create particle effect
-                        createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
-                        
-                        // Dynamic power-up drop rate based on player performance
-                        let dropRate = 0.15; // Base 15% chance
-                        
-                        if (aiAnalysis.shouldIncreasePowerUpRate()) {
-                            dropRate = 0.25; // 25% for struggling players
-                        } else if (aiAnalysis.shouldDecreasePowerUpRate()) {
-                            dropRate = 0.10; // 10% for skilled players
-                        }
-                        
-                        if (Math.random() < dropRate) {
-                            createPowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2);
-                        }
-                        
-                        // Reset consecutive deaths on successful hit
-                        playerMetrics.consecutiveDeaths = 0;
-                    }
-                    
-                    // Check if level is complete
-                    if (bricks.every(b => b.destroyed)) {
-                        gameState = 'levelComplete';
-                        setTimeout(() => {
-                            nextLevel();
-                        }, 2000);
-                    }
-                    
-                    break; // Only handle one collision per frame
-                }
-            }
-        }
         
         function checkBrickCollisionsForBall(ballObj) {
             for (let i = 0; i < bricks.length; i++) {
@@ -816,75 +737,18 @@
             });
         }
         
-        function updateMultiBalls() {
-            for (let i = balls.length - 1; i >= 0; i--) {
-                const extraBall = balls[i];
-                
-                // Move ball
-                extraBall.x += extraBall.dx;
-                extraBall.y += extraBall.dy;
-                
-                // Wall collisions
-                if (extraBall.x - extraBall.radius <= 0 || extraBall.x + extraBall.radius >= canvas.width) {
-                    extraBall.dx = -extraBall.dx;
-                    extraBall.x = Math.max(extraBall.radius, Math.min(canvas.width - extraBall.radius, extraBall.x));
-                }
-                
-                if (extraBall.y - extraBall.radius <= 0) {
-                    extraBall.dy = -extraBall.dy;
-                    extraBall.y = extraBall.radius;
-                }
-                
-                // Paddle collision
-                if (extraBall.y + extraBall.radius >= paddle.y && 
-                    extraBall.y - extraBall.radius <= paddle.y + paddle.height &&
-                    extraBall.x >= paddle.x && 
-                    extraBall.x <= paddle.x + paddle.width) {
-                    
-                    const hitPos = (extraBall.x - paddle.x) / paddle.width;
-                    const bounceAngle = (hitPos - 0.5) * Math.PI * 0.6;
-                    
-                    extraBall.dx = Math.sin(bounceAngle) * extraBall.speed;
-                    extraBall.dy = -Math.cos(bounceAngle) * extraBall.speed;
-                    extraBall.y = paddle.y - extraBall.radius;
-                    
-                    playerMetrics.paddleHits++;
-                    playerMetrics.totalBallBounces++;
-                }
-                
-                // Check brick collisions for extra balls
-                checkBrickCollisionsForBall(extraBall);
-                
-                // Remove if falls off screen
-                if (extraBall.y > canvas.height) {
-                    balls.splice(i, 1);
-                }
-            }
-        }
-        
-        function drawMultiBalls() {
-            balls.forEach(extraBall => {
-                ctx.beginPath();
-                ctx.arc(extraBall.x, extraBall.y, extraBall.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#fff';
-                ctx.fill();
-                
-                ctx.shadowColor = '#fff';
-                ctx.shadowBlur = 10;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-        }
         
         function nextLevel() {
             game.level++;
             createBricks();
-            ball.reset();
             paddle.reset();
+            resetBalls();
             
             // Slightly increase difficulty each level
-            ball.normalSpeed += 0.2;
-            ball.speed = ball.normalSpeed;
+            balls.forEach(ball => {
+                ball.normalSpeed += 0.2;
+                ball.speed = ball.normalSpeed;
+            });
             
             // Increase paddle speed slightly too
             paddle.speed += 0.2;
@@ -906,9 +770,9 @@
             }
             
             // ENTER key launches ball when using keyboard controls
-            if (e.code === 'Enter' && gameState === 'playing' && ball.onPaddle && !paddle.usingMouse) {
+            if (e.code === 'Enter' && gameState === 'playing' && !paddle.usingMouse) {
                 e.preventDefault();
-                ball.launch();
+                launchBall();
             }
             
             if (e.code === 'Space') {
@@ -939,16 +803,12 @@
         canvas.addEventListener('click', (e) => {
             if (gameState === 'menu' || gameState === 'gameOver') {
                 startGame();
-            } else if (gameState === 'playing' && ball.onPaddle) {
-                ball.launch();
+            } else if (gameState === 'playing') {
+                launchBall();
             } else if (gameState === 'ballLost') {
                 // Allow clicking during ball lost state to continue faster
                 if (game.lives > 0) {
-                    ball.onPaddle = true;
-                    ball.x = paddle.x + paddle.width / 2;
-                    ball.y = paddle.y - ball.radius;
-                    ball.dx = 0;
-                    ball.dy = 0;
+                    balls.push(createBall(paddle.x + paddle.width / 2, paddle.y - 8, true));
                     gameState = 'playing';
                 }
             }
@@ -967,15 +827,12 @@
             // Reset objects to initial state
             paddle.reset();
             paddle.speed = 8; // Reset paddle speed
-            ball.reset();
-            ball.normalSpeed = 5; // Reset ball speed
-            ball.speed = 5;
             createBricks();
+            resetBalls();
             
             // Clear particles and power-ups
             particles.length = 0;
             powerUps.length = 0;
-            balls.length = 0;
             activePowerUps.length = 0;
             updatePowerUpUI();
             
@@ -1118,17 +975,17 @@
             if (gameState === 'playing') {
                 // Update game objects
                 paddle.update();
-                ball.update();
-                updateMultiBalls();
-                checkBrickCollisions();
+                updateBalls();
                 updatePowerUps();
                 updateParticles();
+                
+                // Check brick collisions for all balls
+                balls.forEach(ball => checkBrickCollisionsForBall(ball));
                 
                 // Draw game objects
                 drawBricks();
                 paddle.draw();
-                ball.draw();
-                drawMultiBalls();
+                drawBalls();
                 drawPowerUps();
                 drawParticles();
                 
@@ -1145,7 +1002,7 @@
                 // Draw game objects
                 drawBricks();
                 paddle.draw();
-                ball.draw();
+                drawBalls();
                 drawParticles();
                 
                 // Draw level complete message
@@ -1170,8 +1027,7 @@
                 // Draw game objects (frozen)
                 drawBricks();
                 paddle.draw();
-                ball.draw();
-                drawMultiBalls();
+                drawBalls();
                 drawPowerUps();
                 drawParticles();
                 drawPaused();
