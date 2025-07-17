@@ -68,9 +68,9 @@
 - **write_to_file**: Essential for creating documentation
 - **replace_in_file**: Essential for targeted updates
 - **list_files**: Useful for structure verification
+- **execute_command**: Required for git operations and commits
 
 ### Optional Tools
-- **execute_command**: For system operations if needed
 - **search_files**: For finding specific content
 - **ask_followup_question**: For clarification when needed
 
@@ -83,12 +83,17 @@ list_files → read_file (all memory bank files) → verify context
 
 ### Documentation Updates
 ```
-read_file (current state) → write_to_file OR replace_in_file → verify changes
+read_file (current state) → write_to_file OR replace_in_file → verify changes → git commit
 ```
 
 ### Context Verification
 ```
 read_file (each file) → cross-reference information → identify gaps
+```
+
+### Task Completion Workflow
+```
+complete task → verify results → git add → git commit with descriptive message
 ```
 
 ## Performance Considerations
@@ -124,6 +129,7 @@ read_file (each file) → cross-reference information → identify gaps
 - **Act Mode**: Memory Bank guides execution
 - **Updates**: User requests trigger documentation updates
 - **Continuity**: Seamless experience across memory resets
+- **Version Control**: All task completions committed to git with descriptive messages
 
 ## Quality Assurance
 
@@ -138,6 +144,7 @@ read_file (each file) → cross-reference information → identify gaps
 - **Recovery Process**: Clear steps for rebuilding if needed
 - **Validation Steps**: Verify system works after changes
 - **Error Handling**: Graceful handling of missing or corrupt files
+- **Commit Discipline**: All changes tracked in git with meaningful commit messages
 
 ## Future Considerations
 

@@ -3,7 +3,7 @@
 ## Current Work Focus
 
 ### Primary Task
-**Initial Memory Bank Setup**: Creating the foundational Memory Bank system from scratch in an empty project directory.
+**Memory Bank Update**: Adding source control requirement - all task completions must be committed to git with descriptive commit messages.
 
 ### Current Session Status
 - **Session Start**: 7/17/2025, 10:23:26 AM (Australia/Perth)
@@ -80,8 +80,8 @@
 
 ### Workflow Patterns
 - **Plan Mode**: Read context → develop strategy → present approach
-- **Act Mode**: Check context → execute → document changes
-- **Updates**: Review ALL files → update relevant ones → verify consistency
+- **Act Mode**: Check context → execute → document changes → commit changes
+- **Updates**: Review ALL files → update relevant ones → verify consistency → commit updates
 
 ## Learnings and Project Insights
 
@@ -132,8 +132,19 @@
 - [x] Document system completion
 - [x] Provide usage instructions for future sessions
 
+### Current Update: Source Control Requirement ✅
+Added new requirement that all task completions must be committed to git with descriptive commit messages. Updated systemPatterns.md, techContext.md, and productContext.md to reflect this workflow change.
+
 ### System Complete ✅
 The Memory Bank system is now fully implemented and ready for use. All core files are present, documented, and follow the established patterns.
+
+### Immediate Tasks
+- [x] Update systemPatterns.md with commit workflow
+- [x] Update techContext.md with git requirements
+- [x] Update productContext.md with version control steps
+- [x] Update activeContext.md with current state
+- [ ] Update progress.md with this change
+- [ ] Commit all changes with descriptive message
 
 ### Future Considerations
 - [ ] Test system with actual project work

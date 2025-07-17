@@ -77,7 +77,7 @@ Memory Reset → Read ALL Files → Verify Context → Begin Work
 
 ### Work Execution
 ```
-Check Context → Execute Task → Document Changes → Update if Needed
+Check Context → Execute Task → Document Changes → Commit Changes → Update if Needed
 ```
 
 ### Memory Bank Updates
@@ -109,6 +109,7 @@ User Request? → Review ALL files, update as needed
 - **Consistency**: Information aligns across all files
 - **Actionability**: Documentation enables immediate work
 - **Clarity**: Information is clear and unambiguous
+- **Version Control**: All changes committed with descriptive messages
 
 ## Error Prevention Patterns
 
@@ -123,3 +124,4 @@ User Request? → Review ALL files, update as needed
 - **Update Triggers**: Clear events that require updates
 - **Review Process**: All files reviewed during updates
 - **Verification Steps**: Context verification before work begins
+- **Source Control**: All task completions require git commits with descriptive messages

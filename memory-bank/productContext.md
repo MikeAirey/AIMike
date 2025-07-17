@@ -37,6 +37,7 @@ The Memory Bank serves as Cline's external memory system, providing:
 2. **Decision Documentation**: Record important technical choices
 3. **Progress Tracking**: Update status and completion state
 4. **Context Evolution**: Adapt documentation as project grows
+5. **Version Control**: Commit all changes with descriptive messages
 
 #### Update Triggers
 - **Significant Changes**: Major feature implementations
@@ -63,9 +64,11 @@ The Memory Bank serves as Cline's external memory system, providing:
 - Work executed with full project understanding
 - Changes documented in real-time
 - Memory Bank updated as needed
+- All task completions committed to version control
 
 ### Memory Bank Updates
 - Triggered by user request or significant changes
 - ALL files reviewed, even if not all need updates
 - Focus on activeContext.md and progress.md for current state
 - Ensures documentation remains accurate and complete
+- All updates committed to git with descriptive commit messages
