@@ -2,9 +2,33 @@
  * Debug Logging System
  * Handles debug log output to the debug panel
  */
+
+// Null Object Pattern - No-op logger for performance when debugging is disabled
+class NullLogger {
+    log() {}
+    info() {}
+    warn() {}
+    error() {}
+    game() {}
+    ai() {}
+    physics() {}
+    input() {}
+    audio() {}
+    clearLog() {}
+    updateLogDisplay() {}
+    toggleDebug() {
+        // Switch to real logger
+        debugLogger = new DebugLogger();
+    }
+    enableDebug() {
+        debugLogger = new DebugLogger();
+    }
+    disableDebug() {}
+}
+
 export class DebugLogger {
     constructor() {
-        this.enabled = false;
+        this.enabled = true; // Real logger is always enabled when created
         this.logElement = null;
         this.maxLogEntries = 100;
         this.logEntries = [];
@@ -72,7 +96,6 @@ export class DebugLogger {
     }
 
     disableDebug() {
-        this.enabled = false;
         const debugPanel = document.getElementById('debugPanel');
         const debugToggle = document.getElementById('debugToggle');
         
@@ -87,6 +110,9 @@ export class DebugLogger {
         
         // Save state to localStorage
         localStorage.setItem('speedball_debug_enabled', 'false');
+        
+        // Switch to null logger for performance
+        debugLogger = new NullLogger();
     }
 
     log(message, category = 'info', data = null) {
@@ -169,5 +195,6 @@ export class DebugLogger {
     }
 }
 
-// Create global debug logger instance
-export const debugLogger = new DebugLogger();
+// Create global debug logger instance - start with appropriate logger based on saved state
+const savedState = localStorage.getItem('speedball_debug_enabled');
+export let debugLogger = (savedState === 'false') ? new NullLogger() : new DebugLogger();

@@ -20,6 +20,22 @@ export class Accessibility {
         if (audioToggle) {
             audioToggle.addEventListener('click', this.toggleAudio.bind(this));
         }
+        
+        // Load audio state from localStorage, default to enabled
+        const savedState = localStorage.getItem('speedball_audio_enabled');
+        if (savedState === 'false') {
+            this.audioEnabled = false;
+            if (audioToggle) {
+                audioToggle.textContent = 'OFF';
+                audioToggle.setAttribute('aria-pressed', 'false');
+            }
+        } else {
+            this.audioEnabled = true;
+            if (audioToggle) {
+                audioToggle.textContent = 'ON';
+                audioToggle.setAttribute('aria-pressed', 'true');
+            }
+        }
     }
 
     initAudio() {
@@ -40,6 +56,9 @@ export class Accessibility {
             button.textContent = this.audioEnabled ? 'ON' : 'OFF';
             button.setAttribute('aria-pressed', this.audioEnabled.toString());
         }
+        
+        // Save state to localStorage
+        localStorage.setItem('speedball_audio_enabled', this.audioEnabled.toString());
         
         debugLogger.audio('Audio toggled', { enabled: this.audioEnabled });
     }

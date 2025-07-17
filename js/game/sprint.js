@@ -8,7 +8,7 @@ export class SprintSystem {
         
         // Configuration
         this.config = {
-            accelerationPeriodMs: 500,
+            accelerationPeriodMs: 1000,
             defaultSpeed: 5,
             topSpeed: 15,
             
@@ -89,7 +89,7 @@ export class SprintSystem {
     }
 
     resetSettings() {
-        this.config.accelerationPeriodMs = 500;
+        this.config.accelerationPeriodMs = 1000;
         this.config.defaultSpeed = 5;
         this.config.topSpeed = 15;
         

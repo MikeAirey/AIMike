@@ -2,8 +2,8 @@
 
 /* Configuration Panel */
 #configurationPanel {
-    margin-top: 15px;
-    padding: 12px;
+    margin-top: 10px;
+    padding: 8px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     text-align: center;
@@ -13,7 +13,7 @@
 
 #configurationPanel h3 {
     margin-top: 0;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     color: #fff;
     font-size: 18px;
 }
@@ -21,8 +21,8 @@
 .config-section {
     display: inline-block;
     vertical-align: top;
-    margin: 0 10px 15px 10px;
-    padding: 12px;
+    margin: 0 10px 8px 10px;
+    padding: 8px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -30,11 +30,11 @@
 }
 
 .config-section h4 {
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
     color: #fff;
     font-size: 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 4px;
+    padding-bottom: 2px;
 }
 
 .toggle-button {
@@ -69,7 +69,7 @@
 }
 
 .control-group {
-    margin: 8px 0;
+    margin: 4px 0;
     display: block;
     text-align: left;
 }
