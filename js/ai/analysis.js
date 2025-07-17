@@ -2,6 +2,8 @@
  * AI Performance Analysis System
  * Analyzes player performance and provides adaptive assistance
  */
+import { debugLogger } from '../debug.js';
+
 export class AIAnalysis {
     constructor() {
         this.updateInterval = 1000; // Update every second
@@ -31,6 +33,7 @@ export class AIAnalysis {
         this.playerMetrics.timeSpentOnLevel = now - this.playerMetrics.levelStartTime;
         
         // Calculate current accuracy
+        const previousAccuracy = this.playerMetrics.currentAccuracy;
         if (this.playerMetrics.totalBallBounces > 0) {
             this.playerMetrics.currentAccuracy = Math.round(
                 (this.playerMetrics.bricksHit / this.playerMetrics.totalBallBounces) * 100
@@ -38,13 +41,34 @@ export class AIAnalysis {
         }
         
         // Determine skill level based on multiple factors
+        const previousSkillLevel = this.playerMetrics.skillLevel;
         this.determineSkillLevel();
         
         // Check if player needs help
+        const previousNeedsHelp = this.playerMetrics.needsHelp;
         this.checkNeedsHelp();
+        
+        // Log significant changes
+        if (previousSkillLevel !== this.playerMetrics.skillLevel) {
+            debugLogger.ai('Skill level changed', { 
+                from: previousSkillLevel, 
+                to: this.playerMetrics.skillLevel,
+                accuracy: this.playerMetrics.currentAccuracy,
+                consecutiveDeaths: this.playerMetrics.consecutiveDeaths
+            });
+        }
+        
+        if (previousNeedsHelp !== this.playerMetrics.needsHelp) {
+            debugLogger.ai('Help status changed', { 
+                needsHelp: this.playerMetrics.needsHelp,
+                assistanceLevel: this.getAssistanceLevel()
+            });
+        }
         
         // Update performance history
         this.updatePerformanceHistory();
+        
+        debugLogger.ai('Performance analyzed', this.getPerformanceSummary());
     }
 
     determineSkillLevel() {
@@ -52,6 +76,13 @@ export class AIAnalysis {
         const consecutiveDeaths = this.playerMetrics.consecutiveDeaths;
         const timeOnLevel = this.playerMetrics.timeSpentOnLevel / 1000; // Convert to seconds
         const ballsLostRate = this.playerMetrics.ballsLost / Math.max(1, timeOnLevel / 30); // Balls lost per 30 seconds
+        
+        debugLogger.ai('Determining skill level', {
+            accuracy,
+            consecutiveDeaths,
+            timeOnLevel: timeOnLevel.toFixed(1),
+            ballsLostRate: ballsLostRate.toFixed(2)
+        });
         
         // Struggling indicators
         if (accuracy < 30 || consecutiveDeaths >= 3 || ballsLostRate > 2) {
@@ -129,6 +160,12 @@ export class AIAnalysis {
         this.playerMetrics.ballsLost++;
         this.playerMetrics.consecutiveDeaths++;
         this.playerMetrics.missedBalls++;
+        
+        debugLogger.ai('Ball loss tracked', {
+            totalBallsLost: this.playerMetrics.ballsLost,
+            consecutiveDeaths: this.playerMetrics.consecutiveDeaths,
+            currentAccuracy: this.playerMetrics.currentAccuracy
+        });
     }
 
     // Track successful brick hit
@@ -136,6 +173,12 @@ export class AIAnalysis {
         this.playerMetrics.bricksHit++;
         this.playerMetrics.totalBallBounces++;
         this.playerMetrics.consecutiveDeaths = 0; // Reset on success
+        
+        debugLogger.ai('Brick hit tracked', {
+            totalBricksHit: this.playerMetrics.bricksHit,
+            totalBounces: this.playerMetrics.totalBallBounces,
+            newAccuracy: Math.round((this.playerMetrics.bricksHit / this.playerMetrics.totalBallBounces) * 100)
+        });
     }
 
     // Track paddle hit
@@ -146,6 +189,12 @@ export class AIAnalysis {
 
     // Reset metrics for new level
     resetForNewLevel() {
+        debugLogger.ai('Resetting AI metrics for new level', {
+            previousSkillLevel: this.playerMetrics.skillLevel,
+            previousAccuracy: this.playerMetrics.currentAccuracy,
+            bricksHitLastLevel: this.playerMetrics.bricksHit
+        });
+        
         // Keep some persistent metrics
         const persistentMetrics = {
             skillLevel: this.playerMetrics.skillLevel,
@@ -175,6 +224,8 @@ export class AIAnalysis {
 
     // Reset all metrics for new game
     resetForNewGame() {
+        debugLogger.ai('Resetting AI metrics for new game');
+        
         this.playerMetrics = {
             ballsLost: 0,
             bricksHit: 0,

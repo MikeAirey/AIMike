@@ -1,142 +1,45 @@
-# System Patterns: Cline's Memory Bank
+# System Patterns & Best Practices
 
-## System Architecture
+## Development Workflow
+- Always commit changes after completing each task or phase
+- Use descriptive commit messages that explain what was implemented
+- Test functionality before committing
+- Update documentation when adding new features
 
-### File Hierarchy
-```
-memory-bank/
-├── projectbrief.md      # Foundation - shapes all other files
-├── productContext.md    # Why and how the system works
-├── systemPatterns.md    # This file - technical architecture
-├── techContext.md       # Technologies and tools
-├── activeContext.md     # Current work and decisions
-└── progress.md          # Status and evolution
-```
+## Code Organization
+- Modular architecture with separate files for different systems
+- ES6 modules with proper imports/exports
+- Consistent naming conventions
+- Clear separation of concerns
 
-### Information Flow
-```
-projectbrief.md → productContext.md
-                → systemPatterns.md  
-                → techContext.md
-                     ↓
-                activeContext.md
-                     ↓
-                progress.md
-```
+## Debug System
+- Comprehensive logging system with categorized messages
+- Toggle-able debug panel for development
+- Persistent settings using localStorage
+- Performance-conscious (only logs when enabled)
 
-## Key Technical Decisions
+## Configuration Management
+- Unified configuration UI at bottom of screen
+- Visual feedback for toggle states (green ON/red OFF)
+- Organized sections for different feature categories
+- Accessible controls with proper ARIA attributes
 
-### Documentation Format
-- **Markdown**: Universal, readable, version-controllable
-- **Structured Headers**: Consistent navigation and scanning
-- **Clear Sections**: Logical information grouping
-- **Actionable Content**: Every section serves a purpose
+## Game Architecture
+- Main game loop with proper state management
+- Event-driven system for user interactions
+- AI analysis system for adaptive gameplay
+- Physics system for ball movement and collisions
+- Accessibility features for screen readers and audio feedback
 
-### File Responsibilities
+## CSS Structure
+- Main styles in css/main.css
+- Component-specific styles in css/components.css
+- Accessibility styles in css/accessibility.css
+- Responsive design considerations
+- Dark theme with good contrast
 
-#### Core Files (Always Required)
-1. **projectbrief.md**: Immutable foundation, defines scope and goals
-2. **productContext.md**: User experience and workflow definitions
-3. **systemPatterns.md**: Technical architecture and patterns
-4. **techContext.md**: Technology stack and constraints
-5. **activeContext.md**: Dynamic current state and decisions
-6. **progress.md**: Status tracking and evolution history
-
-#### Extension Pattern
-- Additional files/folders for complex features
-- Maintain clear relationships to core files
-- Follow same documentation standards
-- Reference from activeContext.md when relevant
-
-## Design Patterns in Use
-
-### Hierarchical Documentation
-- **Foundation First**: projectbrief.md establishes all context
-- **Layered Information**: Each file builds on previous ones
-- **Dependency Chain**: Clear information flow prevents conflicts
-- **Single Source of Truth**: Each concept has one authoritative location
-
-### State Management
-- **activeContext.md**: Current working state
-- **progress.md**: Historical state and evolution
-- **Immutable Foundation**: Core files change rarely
-- **Dynamic Updates**: Active files change frequently
-
-### Update Patterns
-- **Triggered Updates**: Specific events cause documentation updates
-- **Complete Review**: All files reviewed during updates
-- **Focused Changes**: Most updates affect activeContext.md and progress.md
-- **Consistency Checks**: Ensure all files remain aligned
-- **Phase-based Commits**: When tasks are broken into phases, each phase is committed separately
-
-## Component Relationships
-
-### Session Initialization
-```
-Memory Reset → Read ALL Files → Verify Context → Begin Work
-```
-
-### Work Execution
-```
-Check Context → Execute Task → Document Changes → Commit Changes → Git Status → Update if Needed
-```
-
-### Phased Development
-```
-Plan Phases → Execute Phase → Document Phase → Commit Phase → Git Status → Next Phase
-```
-
-### Git Commit Handling
-```
-Execute Commit → Wait Max 3 Seconds → Continue (Assume Success) → Git Status
-```
-
-### Memory Bank Updates
-```
-Trigger Event → Review ALL Files → Update Relevant Files → Verify Consistency
-```
-
-## Critical Implementation Paths
-
-### Mandatory Reading Sequence
-1. **projectbrief.md**: Understand project scope and goals
-2. **productContext.md**: Understand why and how system works
-3. **systemPatterns.md**: Understand technical architecture
-4. **techContext.md**: Understand technology constraints
-5. **activeContext.md**: Understand current work state
-6. **progress.md**: Understand what's complete and what's next
-
-### Update Decision Tree
-```
-Significant Change? → Update activeContext.md + progress.md
-New Pattern Found? → Update systemPatterns.md + activeContext.md
-Tech Change? → Update techContext.md + activeContext.md
-Scope Change? → Update projectbrief.md + cascade to others
-User Request? → Review ALL files, update as needed
-```
-
-### Quality Assurance
-- **Completeness**: All required files exist and are current
-- **Consistency**: Information aligns across all files
-- **Actionability**: Documentation enables immediate work
-- **Clarity**: Information is clear and unambiguous
-- **Version Control**: All changes committed with descriptive messages
-- **Phase Tracking**: Each development phase committed separately for clear progress tracking
-
-## Error Prevention Patterns
-
-### Common Pitfalls
-- **Skipping Files**: Must read ALL files at session start
-- **Stale Documentation**: Updates must be triggered appropriately
-- **Inconsistent Information**: Files must remain aligned
-- **Missing Context**: activeContext.md must be comprehensive
-
-### Safeguards
-- **Mandatory Reading**: System requires reading all files
-- **Update Triggers**: Clear events that require updates
-- **Review Process**: All files reviewed during updates
-- **Verification Steps**: Context verification before work begins
-- **Source Control**: All task completions require git commits with descriptive messages
-- **Phase Discipline**: When tasks have phases, each phase must be committed individually
-- **Commit Timeout**: If git commit takes >3 seconds, continue as though completed
-- **Status Verification**: Execute git status after each commit for verification
+## Testing Approach
+- Local server testing (python3 -m http.server)
+- Browser-based functional testing
+- Cross-system integration testing
+- Performance monitoring during gameplay

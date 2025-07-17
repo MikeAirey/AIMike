@@ -11,6 +11,7 @@ import { PowerUpSystem } from './game/powerups.js';
 import { ParticleSystem } from './game/particles.js';
 import { AIAnalysis } from './ai/analysis.js';
 import { EventHandler } from './utils/events.js';
+import { debugLogger } from './debug.js';
 
 class Game {
     constructor() {
@@ -41,6 +42,8 @@ class Game {
     }
 
     init() {
+        debugLogger.game('Initializing game systems');
+        
         // Initialize all systems
         this.accessibility.init();
         this.sprintSystem.init();
@@ -48,11 +51,15 @@ class Game {
         // Announce initial state
         this.accessibility.announceGameState('menu');
         
+        debugLogger.game('Game systems initialized, starting game loop');
+        
         // Start game loop
         this.gameLoop(0);
     }
 
     start() {
+        debugLogger.game('Starting new game');
+        
         this.state = 'playing';
         this.score = 0;
         this.lives = 3;
@@ -70,6 +77,8 @@ class Game {
         this.powerUpSystem.clear();
         this.aiAnalysis.resetForNewGame();
         
+        debugLogger.game('Game started', { score: this.score, lives: this.lives, level: this.level });
+        
         // Announce game start
         this.accessibility.announceGameState('playing');
         this.updateUI();
@@ -77,6 +86,7 @@ class Game {
 
     pause() {
         if (this.state === 'playing') {
+            debugLogger.game('Game paused');
             this.state = 'paused';
             this.accessibility.announceGameState('paused');
         }
@@ -84,6 +94,7 @@ class Game {
 
     resume() {
         if (this.state === 'paused') {
+            debugLogger.game('Game resumed');
             this.state = 'playing';
         }
     }
@@ -99,6 +110,8 @@ class Game {
         this.lives--;
         this.aiAnalysis.trackBallLoss();
         
+        debugLogger.game('Ball lost, respawning', { lives: this.lives });
+        
         if (this.lives <= 0) {
             this.gameOver();
             return;
@@ -113,11 +126,18 @@ class Game {
                 // Add new ball on paddle
                 this.ballSystem.addBall(this.paddle.centerX, this.paddle.y - 8, true);
                 this.state = 'playing';
+                debugLogger.game('Ball respawned');
             }
         }, 1000);
     }
 
     gameOver() {
+        debugLogger.game('Game over', { 
+            finalScore: this.score, 
+            finalLevel: this.level,
+            accuracy: this.aiAnalysis.getMetrics().currentAccuracy
+        });
+        
         this.state = 'gameOver';
         this.accessibility.announceGameState('gameOver', { 
             score: this.score, 
@@ -129,6 +149,9 @@ class Game {
 
     nextLevel() {
         this.level++;
+        
+        debugLogger.game('Advancing to next level', { level: this.level });
+        
         this.brickSystem.create();
         this.paddle.reset();
         this.ballSystem.reset(this.paddle);
@@ -141,6 +164,12 @@ class Game {
         
         // Increase paddle speed slightly too
         this.paddle.speed += 0.2;
+        
+        debugLogger.game('Level difficulty increased', { 
+            level: this.level,
+            ballSpeed: this.ballSystem.getAllBalls()[0]?.normalSpeed,
+            paddleSpeed: this.paddle.speed
+        });
         
         this.state = 'playing';
         this.aiAnalysis.resetForNewLevel();
@@ -244,7 +273,7 @@ class Game {
         this.ctx.fillStyle = '#fff';
         this.ctx.font = '48px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('BRICK BALL', this.canvas.width / 2, 200);
+        this.ctx.fillText('SPEEDBALL', this.canvas.width / 2, 200);
         
         this.ctx.font = '24px Arial';
         this.ctx.fillText('Intelligent Adaptive Gameplay', this.canvas.width / 2, 240);

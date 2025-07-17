@@ -2,6 +2,8 @@
  * Ball System
  * Handles ball creation, movement, and collision detection
  */
+import { debugLogger } from '../debug.js';
+
 export class BallSystem {
     constructor(accessibility) {
         this.accessibility = accessibility;
@@ -26,6 +28,7 @@ export class BallSystem {
     addBall(x, y, onPaddle = false) {
         const ball = this.createBall(x, y, onPaddle);
         this.balls.push(ball);
+        debugLogger.physics('Ball added', { x, y, onPaddle, totalBalls: this.balls.length });
         return ball;
     }
 
@@ -47,6 +50,11 @@ export class BallSystem {
             ballOnPaddle.onPaddle = false;
             ballOnPaddle.dx = (Math.random() - 0.5) * 4;
             ballOnPaddle.dy = -ballOnPaddle.speed;
+            debugLogger.physics('Ball launched', { 
+                dx: ballOnPaddle.dx, 
+                dy: ballOnPaddle.dy, 
+                speed: ballOnPaddle.speed 
+            });
         }
     }
 
@@ -71,6 +79,7 @@ export class BallSystem {
             if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) {
                 ball.dx = -ball.dx;
                 ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x));
+                debugLogger.physics('Ball hit side wall', { x: ball.x, dx: ball.dx });
                 if (this.accessibility) {
                     this.accessibility.announceWallBounce();
                 }
@@ -79,6 +88,7 @@ export class BallSystem {
             if (ball.y - ball.radius <= 0) {
                 ball.dy = -ball.dy;
                 ball.y = ball.radius;
+                debugLogger.physics('Ball hit top wall', { y: ball.y, dy: ball.dy });
                 if (this.accessibility) {
                     this.accessibility.announceWallBounce();
                 }
@@ -98,6 +108,13 @@ export class BallSystem {
                 ball.dy = -Math.cos(bounceAngle) * ball.speed;
                 ball.y = paddle.y - ball.radius;
                 
+                debugLogger.physics('Ball hit paddle', { 
+                    hitPos: hitPos.toFixed(2), 
+                    bounceAngle: (bounceAngle * 180 / Math.PI).toFixed(1) + '°',
+                    newDx: ball.dx.toFixed(2),
+                    newDy: ball.dy.toFixed(2)
+                });
+                
                 // Track paddle hits for AI
                 if (playerMetrics) {
                     playerMetrics.paddleHits++;
@@ -111,6 +128,9 @@ export class BallSystem {
             
             // Remove balls that fall off bottom
             if (ball.y > canvas.height) {
+                debugLogger.physics('Ball fell off screen', { 
+                    ballsRemaining: this.balls.length - 1 
+                });
                 this.balls.splice(i, 1);
             }
         }
@@ -175,6 +195,8 @@ export class BallSystem {
         const originalDx = sourceBall.dx;
         const originalDy = sourceBall.dy;
         
+        debugLogger.physics('Splitting ball', { count, totalBallsBefore: this.balls.length });
+        
         for (let i = 0; i < count; i++) {
             const newBall = this.createBall(sourceBall.x, sourceBall.y, false);
             
@@ -188,6 +210,11 @@ export class BallSystem {
             this.balls.push(newBall);
             newBalls.push(newBall);
         }
+        
+        debugLogger.physics('Ball split complete', { 
+            newBallsCreated: count, 
+            totalBallsAfter: this.balls.length 
+        });
         
         return newBalls;
     }

@@ -2,6 +2,8 @@
  * Event Handling Utilities
  * Centralized event management for the game
  */
+import { debugLogger } from '../debug.js';
+
 export class EventHandler {
     constructor(game, accessibility) {
         this.game = game;
@@ -44,27 +46,33 @@ export class EventHandler {
     handleKeyDown(e) {
         this.keys[e.code] = true;
         
+        debugLogger.input('Key pressed', { key: e.code, gameState: this.game.state });
+        
         // Switch to keyboard control when arrow keys are pressed
         if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
             this.game.paddle.switchToKeyboard();
+            debugLogger.input('Switched to keyboard control');
         }
         
         // ENTER key launches ball when using keyboard controls
         if (e.code === 'Enter' && this.game.state === 'playing' && !this.game.paddle.usingMouse) {
             e.preventDefault();
             this.game.ballSystem.launch();
+            debugLogger.input('Ball launched via keyboard');
         }
         
         // SHIFT key starts sprint
         if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && this.game.state === 'playing') {
             e.preventDefault();
             this.game.sprintSystem.start(this.game.ballSystem.getAllBalls(), this.game.state);
+            debugLogger.input('Sprint started');
         }
         
         // SPACE key pauses/unpauses
         if (e.code === 'Space') {
             e.preventDefault();
             this.handleSpaceKey();
+            debugLogger.input('Space key handled', { newState: this.game.state });
         }
         
         // A key toggles audio
@@ -72,6 +80,7 @@ export class EventHandler {
             e.preventDefault();
             if (this.accessibility) {
                 this.accessibility.toggleAudio();
+                debugLogger.input('Audio toggled');
             }
         }
         
@@ -80,6 +89,7 @@ export class EventHandler {
             e.preventDefault();
             if (this.accessibility) {
                 this.accessibility.announceKeyboardShortcuts();
+                debugLogger.input('Help shortcuts announced');
             }
         }
         
@@ -88,6 +98,7 @@ export class EventHandler {
             e.preventDefault();
             if (this.game.state === 'playing' || this.game.state === 'paused') {
                 this.game.returnToMenu();
+                debugLogger.input('Returned to menu via ESC');
             }
         }
     }
@@ -95,10 +106,13 @@ export class EventHandler {
     handleKeyUp(e) {
         this.keys[e.code] = false;
         
+        debugLogger.input('Key released', { key: e.code });
+        
         // SHIFT key ends sprint
         if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && this.game.state === 'playing') {
             e.preventDefault();
             this.game.sprintSystem.end();
+            debugLogger.input('Sprint ended');
         }
     }
 
@@ -107,8 +121,16 @@ export class EventHandler {
         if (!canvas) return;
         
         const rect = canvas.getBoundingClientRect();
-        this.mouse.x = e.clientX - rect.left;
-        this.mouse.y = e.clientY - rect.top;
+        const newX = e.clientX - rect.left;
+        const newY = e.clientY - rect.top;
+        
+        // Only log significant mouse movements to avoid spam
+        if (Math.abs(newX - this.mouse.x) > 10) {
+            debugLogger.input('Mouse moved', { x: newX.toFixed(0), y: newY.toFixed(0) });
+        }
+        
+        this.mouse.x = newX;
+        this.mouse.y = newY;
         
         // Switch to mouse control when mouse moves
         if (this.game.state === 'playing') {
@@ -120,13 +142,25 @@ export class EventHandler {
         const canvas = document.getElementById('gameCanvas');
         if (!canvas) return;
         
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        debugLogger.input('Mouse clicked', { 
+            x: clickX.toFixed(0), 
+            y: clickY.toFixed(0), 
+            gameState: this.game.state 
+        });
+        
         // Focus canvas for keyboard input
         canvas.focus();
         
         if (this.game.state === 'menu' || this.game.state === 'gameOver') {
             this.game.start();
+            debugLogger.input('Game started via click');
         } else if (this.game.state === 'playing') {
             this.game.ballSystem.launch();
+            debugLogger.input('Ball launched via click');
         } else if (this.game.state === 'ballLost') {
             // Allow clicking during ball lost state to continue faster
             if (this.game.lives > 0) {
@@ -136,6 +170,7 @@ export class EventHandler {
                     true
                 );
                 this.game.state = 'playing';
+                debugLogger.input('Ball respawned via click');
             }
         }
     }

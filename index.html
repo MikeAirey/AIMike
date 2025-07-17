@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intelligent Adaptive Brick Ball Game</title>
+    <title>speedball</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/accessibility.css">
     <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
-    <h1>Intelligent Adaptive Brick Ball</h1>
+    <h1>speedball</h1>
     
     <!-- Screen reader announcements -->
     <div id="gameAnnouncements" aria-live="polite" aria-atomic="true" class="sr-only"></div>
     <div id="gameStatus" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
     
-    <!-- Audio controls -->
-    <div id="audioControls">
-        <button id="audioToggle" type="button" aria-pressed="true">🔊 Sound: ON</button>
+    <div id="gameContainer">
+        <!-- Debug Log Panel -->
+        <div id="debugPanel" class="debug-panel">
+            <h3>Debug Log</h3>
+            <div id="debugLog" class="debug-log"></div>
+            <button id="clearDebugLog" class="debug-clear-btn">Clear Log</button>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600" 
+                role="application" 
+                aria-label="speedball Game - Use arrow keys to move paddle, space to pause, enter or click to launch ball"
+                aria-describedby="gameInfo instructions"
+                tabindex="0"></canvas>
     </div>
-    
-    <canvas id="gameCanvas" width="800" height="600" 
-            role="application" 
-            aria-label="Brick Ball Game - Use arrow keys to move paddle, space to pause, enter or click to launch ball"
-            aria-describedby="gameInfo instructions"
-            tabindex="0"></canvas>
     
     <div id="gameInfo" role="status" aria-live="polite">
         <div>Score: <span id="score">0</span></div>
@@ -39,23 +43,46 @@
         Use ← → arrow keys or mouse to move paddle | SPACE to pause | ENTER or Click to launch ball/start game | SHIFT to sprint
     </div>
     
-    <div id="sprintControls">
-        <h3>Sprint Configuration</h3>
-        <div class="control-group">
-            <label for="accelerationPeriod">Acceleration Period (ms):</label>
-            <input type="number" id="accelerationPeriod" value="500" min="100" max="2000" step="50">
+    <div id="configurationPanel">
+        <h3>Configuration</h3>
+        
+        <!-- Debug Controls -->
+        <div class="config-section">
+            <h4>Debug</h4>
+            <div class="control-group">
+                <label for="debugToggle">Debug Log:</label>
+                <button id="debugToggle" type="button" aria-pressed="false" class="toggle-button">OFF</button>
+            </div>
         </div>
-        <div class="control-group">
-            <label for="defaultSpeed">Default Speed:</label>
-            <input type="number" id="defaultSpeed" value="5" min="1" max="20" step="0.5">
+        
+        <!-- Audio Controls -->
+        <div class="config-section">
+            <h4>Audio</h4>
+            <div class="control-group">
+                <label for="audioToggle">Sound:</label>
+                <button id="audioToggle" type="button" aria-pressed="true" class="toggle-button">ON</button>
+            </div>
         </div>
-        <div class="control-group">
-            <label for="topSpeed">Top Speed:</label>
-            <input type="number" id="topSpeed" value="50" min="10" max="200" step="5">
-        </div>
-        <div class="control-buttons">
-            <button id="applySprintConfig">Apply Settings</button>
-            <button id="resetSprintConfig">Reset to Defaults</button>
+        
+        <!-- Sprint Configuration -->
+        <div class="config-section">
+            <h4>Sprint Settings</h4>
+            <div class="control-group">
+                <label for="accelerationPeriod">Acceleration Period (ms):</label>
+                <input type="number" id="accelerationPeriod" value="500" min="100" max="2000" step="50">
+            </div>
+            <div class="control-group">
+                <label for="defaultSpeed">Default Speed:</label>
+                <input type="number" id="defaultSpeed" value="5" min="1" max="20" step="0.5">
+            </div>
+            <div class="control-group">
+                <label for="topSpeed">Top Speed:</label>
+                <input type="number" id="topSpeed" value="50" min="10" max="200" step="5">
+            </div>
+            <div class="control-buttons">
+                <button id="applySprintConfig">Apply Settings</button>
+                <button id="resetSprintConfig">Reset to Defaults</button>
+            </div>
         </div>
     </div>
 

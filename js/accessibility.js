@@ -2,6 +2,8 @@
  * Accessibility System
  * Handles screen reader announcements, audio feedback, and accessibility features
  */
+import { debugLogger } from './debug.js';
+
 export class Accessibility {
     constructor() {
         this.audioEnabled = true;
@@ -23,9 +25,11 @@ export class Accessibility {
     initAudio() {
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            debugLogger.audio('Audio context initialized');
         } catch (e) {
             console.log('Audio not supported');
             this.audioEnabled = false;
+            debugLogger.audio('Audio initialization failed', { error: e.message });
         }
     }
 
@@ -33,13 +37,17 @@ export class Accessibility {
         this.audioEnabled = !this.audioEnabled;
         const button = document.getElementById('audioToggle');
         if (button) {
-            button.textContent = this.audioEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+            button.textContent = this.audioEnabled ? 'ON' : 'OFF';
             button.setAttribute('aria-pressed', this.audioEnabled.toString());
         }
+        
+        debugLogger.audio('Audio toggled', { enabled: this.audioEnabled });
     }
 
     playSound(frequency, duration = 100, type = 'sine') {
         if (!this.audioEnabled || !this.audioContext) return;
+        
+        debugLogger.audio('Playing sound', { frequency, duration, type });
         
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
