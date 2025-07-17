@@ -38,12 +38,14 @@ The Memory Bank serves as Cline's external memory system, providing:
 3. **Progress Tracking**: Update status and completion state
 4. **Context Evolution**: Adapt documentation as project grows
 5. **Version Control**: Commit all changes with descriptive messages
+6. **Phase Management**: When tasks have phases, commit each phase separately
 
 #### Update Triggers
 - **Significant Changes**: Major feature implementations
 - **New Patterns**: Discovery of important technical patterns
 - **User Request**: Explicit "update memory bank" command
 - **Context Gaps**: When documentation feels incomplete
+- **Phase Completion**: Each development phase triggers documentation and commit
 
 ### Success Indicators
 - Cline can immediately understand project state after reset
@@ -72,3 +74,4 @@ The Memory Bank serves as Cline's external memory system, providing:
 - Focus on activeContext.md and progress.md for current state
 - Ensures documentation remains accurate and complete
 - All updates committed to git with descriptive commit messages
+- Phased development requires individual commits per phase for granular tracking

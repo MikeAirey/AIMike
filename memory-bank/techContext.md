@@ -96,6 +96,11 @@ read_file (each file) → cross-reference information → identify gaps
 complete task → verify results → git add → git commit with descriptive message
 ```
 
+### Phased Development Workflow
+```
+plan phases → execute phase → document phase progress → git commit phase → next phase
+```
+
 ## Performance Considerations
 
 ### Reading Efficiency
@@ -130,6 +135,7 @@ complete task → verify results → git add → git commit with descriptive mes
 - **Updates**: User requests trigger documentation updates
 - **Continuity**: Seamless experience across memory resets
 - **Version Control**: All task completions committed to git with descriptive messages
+- **Phased Development**: When tasks are broken into phases, each phase is committed separately
 
 ## Quality Assurance
 
@@ -145,6 +151,7 @@ complete task → verify results → git add → git commit with descriptive mes
 - **Validation Steps**: Verify system works after changes
 - **Error Handling**: Graceful handling of missing or corrupt files
 - **Commit Discipline**: All changes tracked in git with meaningful commit messages
+- **Phase Tracking**: Each development phase committed individually for granular progress history
 
 ## Future Considerations
 

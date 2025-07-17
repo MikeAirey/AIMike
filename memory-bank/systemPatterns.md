@@ -67,6 +67,7 @@ projectbrief.md → productContext.md
 - **Complete Review**: All files reviewed during updates
 - **Focused Changes**: Most updates affect activeContext.md and progress.md
 - **Consistency Checks**: Ensure all files remain aligned
+- **Phase-based Commits**: When tasks are broken into phases, each phase is committed separately
 
 ## Component Relationships
 
@@ -78,6 +79,11 @@ Memory Reset → Read ALL Files → Verify Context → Begin Work
 ### Work Execution
 ```
 Check Context → Execute Task → Document Changes → Commit Changes → Update if Needed
+```
+
+### Phased Development
+```
+Plan Phases → Execute Phase → Document Phase → Commit Phase → Next Phase
 ```
 
 ### Memory Bank Updates
@@ -110,6 +116,7 @@ User Request? → Review ALL files, update as needed
 - **Actionability**: Documentation enables immediate work
 - **Clarity**: Information is clear and unambiguous
 - **Version Control**: All changes committed with descriptive messages
+- **Phase Tracking**: Each development phase committed separately for clear progress tracking
 
 ## Error Prevention Patterns
 
@@ -125,3 +132,4 @@ User Request? → Review ALL files, update as needed
 - **Review Process**: All files reviewed during updates
 - **Verification Steps**: Context verification before work begins
 - **Source Control**: All task completions require git commits with descriptive messages
+- **Phase Discipline**: When tasks have phases, each phase must be committed individually
