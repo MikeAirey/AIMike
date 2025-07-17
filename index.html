@@ -22,6 +22,10 @@
             display: block;
         }
         
+        #gameCanvas.playing {
+            cursor: none;
+        }
+        
         #gameInfo {
             margin-top: 10px;
             display: flex;
@@ -326,34 +330,44 @@
             },
             
             respawn() {
-                game.lives--;
-                playerMetrics.ballsLost++;
-                playerMetrics.consecutiveDeaths++;
-                playerMetrics.missedBalls++;
-                
-                // Track paddle miss for AI analysis
-                aiAnalysis.trackPaddleMiss(this.x, paddle.x, paddle.width);
-                
-                // Clear multi-balls when main ball is lost
-                balls.length = 0;
-                
-                if (game.lives <= 0) {
-                    gameState = 'gameOver';
-                    return;
-                }
-                
-                // Brief pause before respawn
-                gameState = 'ballLost';
-                setTimeout(() => {
-                    if (game.lives > 0) {
-                        this.onPaddle = true;
-                        this.x = paddle.x + paddle.width / 2;
-                        this.y = paddle.y - this.radius;
-                        this.dx = 0;
-                        this.dy = 0;
-                        gameState = 'playing';
+                // Only lose a life if ALL balls are gone (main ball + multi-balls)
+                if (balls.length === 0) {
+                    // No other balls in play, lose a life
+                    game.lives--;
+                    playerMetrics.ballsLost++;
+                    playerMetrics.consecutiveDeaths++;
+                    playerMetrics.missedBalls++;
+                    
+                    // Track paddle miss for AI analysis
+                    aiAnalysis.trackPaddleMiss(this.x, paddle.x, paddle.width);
+                    
+                    if (game.lives <= 0) {
+                        gameState = 'gameOver';
+                        // Show cursor when game ends
+                        canvas.classList.remove('playing');
+                        return;
                     }
-                }, 1000);
+                    
+                    // Brief pause before respawn
+                    gameState = 'ballLost';
+                    setTimeout(() => {
+                        if (game.lives > 0) {
+                            this.onPaddle = true;
+                            this.x = paddle.x + paddle.width / 2;
+                            this.y = paddle.y - this.radius;
+                            this.dx = 0;
+                            this.dy = 0;
+                            gameState = 'playing';
+                        }
+                    }, 1000);
+                } else {
+                    // Other balls still in play, just remove this ball
+                    this.onPaddle = true;
+                    this.x = paddle.x + paddle.width / 2;
+                    this.y = paddle.y - this.radius;
+                    this.dx = 0;
+                    this.dy = 0;
+                }
             },
             
             reset() {
@@ -891,6 +905,12 @@
                 paddle.usingMouse = false;
             }
             
+            // ENTER key launches ball when using keyboard controls
+            if (e.code === 'Enter' && gameState === 'playing' && ball.onPaddle && !paddle.usingMouse) {
+                e.preventDefault();
+                ball.launch();
+            }
+            
             if (e.code === 'Space') {
                 e.preventDefault();
                 if (gameState === 'playing') {
@@ -940,6 +960,9 @@
             game.score = 0;
             game.lives = 3;
             game.level = 1;
+            
+            // Hide cursor when game starts
+            canvas.classList.add('playing');
             
             // Reset objects to initial state
             paddle.reset();
@@ -1000,6 +1023,9 @@
         }
         
         function drawMenu() {
+            // Show cursor in menu
+            canvas.classList.remove('playing');
+            
             ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
