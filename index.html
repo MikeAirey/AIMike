@@ -80,6 +80,129 @@
             mouse: { x: 400, y: 500 }
         };
         
+        // Player Performance Metrics (for AI)
+        const playerMetrics = {
+            ballsLost: 0,
+            bricksHit: 0,
+            totalBallBounces: 0,
+            paddleHits: 0,
+            missedBalls: 0,
+            timeSpentOnLevel: 0,
+            consecutiveDeaths: 0,
+            currentAccuracy: 0,
+            levelStartTime: Date.now(),
+            skillLevel: 'average', // struggling, average, skilled
+            needsHelp: false,
+            recentPerformance: [], // Track last 10 ball interactions
+            avgReactionTime: 0,
+            paddleMissDistance: 0 // How far off paddle was when ball was missed
+        };
+        
+        // AI Performance Analysis System
+        const aiAnalysis = {
+            updateInterval: 1000, // Update every second
+            lastUpdate: Date.now(),
+            
+            analyzePerformance() {
+                const now = Date.now();
+                playerMetrics.timeSpentOnLevel = now - playerMetrics.levelStartTime;
+                
+                // Calculate current accuracy
+                if (playerMetrics.totalBallBounces > 0) {
+                    playerMetrics.currentAccuracy = Math.round((playerMetrics.bricksHit / playerMetrics.totalBallBounces) * 100);
+                }
+                
+                // Determine skill level based on multiple factors
+                this.determineSkillLevel();
+                
+                // Check if player needs help
+                this.checkNeedsHelp();
+                
+                // Update performance history
+                this.updatePerformanceHistory();
+            },
+            
+            determineSkillLevel() {
+                const accuracy = playerMetrics.currentAccuracy;
+                const consecutiveDeaths = playerMetrics.consecutiveDeaths;
+                const timeOnLevel = playerMetrics.timeSpentOnLevel / 1000; // Convert to seconds
+                const ballsLostRate = playerMetrics.ballsLost / Math.max(1, timeOnLevel / 30); // Balls lost per 30 seconds
+                
+                // Struggling indicators
+                if (accuracy < 30 || consecutiveDeaths >= 3 || ballsLostRate > 2) {
+                    playerMetrics.skillLevel = 'struggling';
+                } 
+                // Skilled indicators
+                else if (accuracy > 60 && consecutiveDeaths === 0 && ballsLostRate < 0.5) {
+                    playerMetrics.skillLevel = 'skilled';
+                }
+                // Average (default)
+                else {
+                    playerMetrics.skillLevel = 'average';
+                }
+            },
+            
+            checkNeedsHelp() {
+                const struggling = playerMetrics.skillLevel === 'struggling';
+                const longTimeOnLevel = playerMetrics.timeSpentOnLevel > 120000; // 2 minutes
+                const lowProgress = playerMetrics.bricksHit < 10 && playerMetrics.timeSpentOnLevel > 60000; // Less than 10 bricks in 1 minute
+                
+                playerMetrics.needsHelp = struggling || longTimeOnLevel || lowProgress;
+            },
+            
+            updatePerformanceHistory() {
+                // Track recent performance for trend analysis
+                const currentPerformance = {
+                    timestamp: Date.now(),
+                    accuracy: playerMetrics.currentAccuracy,
+                    consecutiveDeaths: playerMetrics.consecutiveDeaths,
+                    skillLevel: playerMetrics.skillLevel
+                };
+                
+                playerMetrics.recentPerformance.push(currentPerformance);
+                
+                // Keep only last 10 entries
+                if (playerMetrics.recentPerformance.length > 10) {
+                    playerMetrics.recentPerformance.shift();
+                }
+            },
+            
+            trackPaddleMiss(ballX, paddleX, paddleWidth) {
+                // Calculate how far the ball was from the paddle center when missed
+                const paddleCenter = paddleX + paddleWidth / 2;
+                const missDistance = Math.abs(ballX - paddleCenter);
+                
+                // Update average miss distance (for AI assistance calibration)
+                if (playerMetrics.paddleMissDistance === 0) {
+                    playerMetrics.paddleMissDistance = missDistance;
+                } else {
+                    playerMetrics.paddleMissDistance = (playerMetrics.paddleMissDistance + missDistance) / 2;
+                }
+            },
+            
+            getAssistanceLevel() {
+                if (playerMetrics.skillLevel === 'struggling') {
+                    return 'active'; // Noticeable help
+                } else if (playerMetrics.skillLevel === 'average' && playerMetrics.needsHelp) {
+                    return 'subtle'; // Minor help
+                } else {
+                    return 'none'; // No help needed
+                }
+            },
+            
+            shouldIncreasePowerUpRate() {
+                return playerMetrics.skillLevel === 'struggling' || 
+                       (playerMetrics.consecutiveDeaths >= 2 && playerMetrics.currentAccuracy < 40);
+            },
+            
+            shouldDecreasePowerUpRate() {
+                return playerMetrics.skillLevel === 'skilled' && playerMetrics.currentAccuracy > 70;
+            }
+        };
+        
+        // Multi-ball system
+        const balls = []; // Additional balls for multi-ball power-up
+        
         // Paddle Object
         const paddle = {
             x: 350,
@@ -322,149 +445,6 @@
             });
         }
         
-        function checkBrickCollisions() {
-            for (let i = 0; i < bricks.length; i++) {
-                const brick = bricks[i];
-                if (brick.destroyed) continue;
-                
-                // Check if ball intersects with brick
-                if (ball.x + ball.radius > brick.x &&
-                    ball.x - ball.radius < brick.x + brick.width &&
-                    ball.y + ball.radius > brick.y &&
-                    ball.y - ball.radius < brick.y + brick.height) {
-                    
-                    // Determine collision side
-                    const ballCenterX = ball.x;
-                    const ballCenterY = ball.y;
-                    const brickCenterX = brick.x + brick.width / 2;
-                    const brickCenterY = brick.y + brick.height / 2;
-                    
-                    const deltaX = ballCenterX - brickCenterX;
-                    const deltaY = ballCenterY - brickCenterY;
-                    
-                    const intersectX = Math.abs(deltaX) - (brick.width / 2 + ball.radius);
-                    const intersectY = Math.abs(deltaY) - (brick.height / 2 + ball.radius);
-                    
-                    // Bounce ball based on collision side
-                    if (intersectX > intersectY) {
-                        ball.dx = -ball.dx;
-                    } else {
-                        ball.dy = -ball.dy;
-                    }
-                    
-                    // Damage brick
-                    brick.hits--;
-                    playerMetrics.bricksHit++;
-                    playerMetrics.totalBallBounces++;
-                    
-                    if (brick.hits <= 0) {
-                        brick.destroyed = true;
-                        game.score += brick.points;
-                        
-                        // Create particle effect
-                        createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
-                        
-                        // Dynamic power-up drop rate based on player performance
-                        let dropRate = 0.15; // Base 15% chance
-                        
-                        if (aiAnalysis.shouldIncreasePowerUpRate()) {
-                            dropRate = 0.25; // 25% for struggling players
-                        } else if (aiAnalysis.shouldDecreasePowerUpRate()) {
-                            dropRate = 0.10; // 10% for skilled players
-                        }
-                        
-                        if (Math.random() < dropRate) {
-                            createPowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2);
-                        }
-                        // Dynamic power-up drop rate based on player performance
-                        let dropRate = 0.15; // Base 15% chance
-                        
-                        if (aiAnalysis.shouldIncreasePowerUpRate()) {
-                            dropRate = 0.25; // 25% for struggling players
-                        } else if (aiAnalysis.shouldDecreasePowerUpRate()) {
-                            dropRate = 0.10; // 10% for skilled players
-                        }
-                        
-                        if (Math.random() < dropRate) {
-                            createPowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2);
-                        }
-                        
-                        // Reset consecutive deaths on successful hit
-                        playerMetrics.consecutiveDeaths = 0;
-                    }
-                    
-                    // Check if level is complete
-                    if (bricks.every(b => b.destroyed)) {
-                        gameState = 'levelComplete';
-                        setTimeout(() => {
-                            nextLevel();
-                        }, 2000);
-                    }
-                    
-                    break; // Only handle one collision per frame
-                }
-            }
-        }
-        
-        // Particle System for Visual Effects
-        const particles = [];
-        
-        function createParticles(x, y, color) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x,
-                    y: y,
-                    dx: (Math.random() - 0.5) * 8,
-                    dy: (Math.random() - 0.5) * 8,
-                    color: color,
-                    life: 30,
-                    maxLife: 30
-                });
-            }
-        }
-        
-        function updateParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const particle = particles[i];
-                particle.x += particle.dx;
-                particle.y += particle.dy;
-                particle.dy += 0.3; // Gravity
-                particle.life--;
-                
-                if (particle.life <= 0) {
-                    particles.splice(i, 1);
-                }
-            }
-        }
-        
-        function drawParticles() {
-            particles.forEach(particle => {
-                const alpha = particle.life / particle.maxLife;
-                ctx.fillStyle = particle.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
-                ctx.fillRect(particle.x - 2, particle.y - 2, 4, 4);
-            });
-        }
-        
-        function nextLevel() {
-            game.level++;
-            createBricks();
-            ball.reset();
-            paddle.reset();
-            
-            // Slightly increase difficulty each level
-            ball.normalSpeed += 0.2;
-            ball.speed = ball.normalSpeed;
-            
-            // Increase paddle speed slightly too
-            paddle.speed += 0.2;
-            
-            gameState = 'playing';
-            playerMetrics.levelStartTime = Date.now();
-            
-            // Reset consecutive deaths for new level
-            playerMetrics.consecutiveDeaths = 0;
-        }
-        
         // Power-up System
         const powerUps = [];
         const activePowerUps = [];
@@ -536,9 +516,6 @@
             }
         };
         
-        // Multi-ball system
-        const balls = []; // Additional balls for multi-ball power-up
-        
         function createPowerUp(x, y) {
             const types = Object.keys(powerUpTypes);
             const randomType = types[Math.floor(Math.random() * types.length)];
@@ -551,6 +528,182 @@
                 dy: 2,
                 type: randomType,
                 config: powerUpTypes[randomType]
+            });
+        }
+        
+        function checkBrickCollisions() {
+            for (let i = 0; i < bricks.length; i++) {
+                const brick = bricks[i];
+                if (brick.destroyed) continue;
+                
+                // Check if ball intersects with brick
+                if (ball.x + ball.radius > brick.x &&
+                    ball.x - ball.radius < brick.x + brick.width &&
+                    ball.y + ball.radius > brick.y &&
+                    ball.y - ball.radius < brick.y + brick.height) {
+                    
+                    // Determine collision side
+                    const ballCenterX = ball.x;
+                    const ballCenterY = ball.y;
+                    const brickCenterX = brick.x + brick.width / 2;
+                    const brickCenterY = brick.y + brick.height / 2;
+                    
+                    const deltaX = ballCenterX - brickCenterX;
+                    const deltaY = ballCenterY - brickCenterY;
+                    
+                    const intersectX = Math.abs(deltaX) - (brick.width / 2 + ball.radius);
+                    const intersectY = Math.abs(deltaY) - (brick.height / 2 + ball.radius);
+                    
+                    // Bounce ball based on collision side
+                    if (intersectX > intersectY) {
+                        ball.dx = -ball.dx;
+                    } else {
+                        ball.dy = -ball.dy;
+                    }
+                    
+                    // Damage brick
+                    brick.hits--;
+                    playerMetrics.bricksHit++;
+                    playerMetrics.totalBallBounces++;
+                    
+                    if (brick.hits <= 0) {
+                        brick.destroyed = true;
+                        game.score += brick.points;
+                        
+                        // Create particle effect
+                        createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+                        
+                        // Dynamic power-up drop rate based on player performance
+                        let dropRate = 0.15; // Base 15% chance
+                        
+                        if (aiAnalysis.shouldIncreasePowerUpRate()) {
+                            dropRate = 0.25; // 25% for struggling players
+                        } else if (aiAnalysis.shouldDecreasePowerUpRate()) {
+                            dropRate = 0.10; // 10% for skilled players
+                        }
+                        
+                        if (Math.random() < dropRate) {
+                            createPowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2);
+                        }
+                        
+                        // Reset consecutive deaths on successful hit
+                        playerMetrics.consecutiveDeaths = 0;
+                    }
+                    
+                    // Check if level is complete
+                    if (bricks.every(b => b.destroyed)) {
+                        gameState = 'levelComplete';
+                        setTimeout(() => {
+                            nextLevel();
+                        }, 2000);
+                    }
+                    
+                    break; // Only handle one collision per frame
+                }
+            }
+        }
+        
+        function checkBrickCollisionsForBall(ballObj) {
+            for (let i = 0; i < bricks.length; i++) {
+                const brick = bricks[i];
+                if (brick.destroyed) continue;
+                
+                if (ballObj.x + ballObj.radius > brick.x &&
+                    ballObj.x - ballObj.radius < brick.x + brick.width &&
+                    ballObj.y + ballObj.radius > brick.y &&
+                    ballObj.y - ballObj.radius < brick.y + brick.height) {
+                    
+                    const ballCenterX = ballObj.x;
+                    const ballCenterY = ballObj.y;
+                    const brickCenterX = brick.x + brick.width / 2;
+                    const brickCenterY = brick.y + brick.height / 2;
+                    
+                    const deltaX = ballCenterX - brickCenterX;
+                    const deltaY = ballCenterY - brickCenterY;
+                    
+                    const intersectX = Math.abs(deltaX) - (brick.width / 2 + ballObj.radius);
+                    const intersectY = Math.abs(deltaY) - (brick.height / 2 + ballObj.radius);
+                    
+                    if (intersectX > intersectY) {
+                        ballObj.dx = -ballObj.dx;
+                    } else {
+                        ballObj.dy = -ballObj.dy;
+                    }
+                    
+                    brick.hits--;
+                    playerMetrics.bricksHit++;
+                    playerMetrics.totalBallBounces++;
+                    
+                    if (brick.hits <= 0) {
+                        brick.destroyed = true;
+                        game.score += brick.points;
+                        
+                        createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+                        
+                        // Dynamic power-up drop rate based on player performance
+                        let dropRate = 0.15; // Base 15% chance
+                        
+                        if (aiAnalysis.shouldIncreasePowerUpRate()) {
+                            dropRate = 0.25; // 25% for struggling players
+                        } else if (aiAnalysis.shouldDecreasePowerUpRate()) {
+                            dropRate = 0.10; // 10% for skilled players
+                        }
+                        
+                        if (Math.random() < dropRate) {
+                            createPowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2);
+                        }
+                        
+                        playerMetrics.consecutiveDeaths = 0;
+                    }
+                    
+                    if (bricks.every(b => b.destroyed)) {
+                        gameState = 'levelComplete';
+                        setTimeout(() => {
+                            nextLevel();
+                        }, 2000);
+                    }
+                    
+                    break;
+                }
+            }
+        }
+        
+        // Particle System for Visual Effects
+        const particles = [];
+        
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 8,
+                    dy: (Math.random() - 0.5) * 8,
+                    color: color,
+                    life: 30,
+                    maxLife: 30
+                });
+            }
+        }
+        
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.dx;
+                particle.y += particle.dy;
+                particle.dy += 0.3; // Gravity
+                particle.life--;
+                
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+        
+        function drawParticles() {
+            particles.forEach(particle => {
+                const alpha = particle.life / particle.maxLife;
+                ctx.fillStyle = particle.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+                ctx.fillRect(particle.x - 2, particle.y - 2, 4, 4);
             });
         }
         
@@ -692,63 +845,6 @@
             }
         }
         
-        function checkBrickCollisionsForBall(ballObj) {
-            for (let i = 0; i < bricks.length; i++) {
-                const brick = bricks[i];
-                if (brick.destroyed) continue;
-                
-                if (ballObj.x + ballObj.radius > brick.x &&
-                    ballObj.x - ballObj.radius < brick.x + brick.width &&
-                    ballObj.y + ballObj.radius > brick.y &&
-                    ballObj.y - ballObj.radius < brick.y + brick.height) {
-                    
-                    const ballCenterX = ballObj.x;
-                    const ballCenterY = ballObj.y;
-                    const brickCenterX = brick.x + brick.width / 2;
-                    const brickCenterY = brick.y + brick.height / 2;
-                    
-                    const deltaX = ballCenterX - brickCenterX;
-                    const deltaY = ballCenterY - brickCenterY;
-                    
-                    const intersectX = Math.abs(deltaX) - (brick.width / 2 + ballObj.radius);
-                    const intersectY = Math.abs(deltaY) - (brick.height / 2 + ballObj.radius);
-                    
-                    if (intersectX > intersectY) {
-                        ballObj.dx = -ballObj.dx;
-                    } else {
-                        ballObj.dy = -ballObj.dy;
-                    }
-                    
-                    brick.hits--;
-                    playerMetrics.bricksHit++;
-                    playerMetrics.totalBallBounces++;
-                    
-                    if (brick.hits <= 0) {
-                        brick.destroyed = true;
-                        game.score += brick.points;
-                        
-                        createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
-                        
-                        // 15% chance to drop power-up
-                        if (Math.random() < 0.15) {
-                            createPowerUp(brick.x + brick.width / 2, brick.y + brick.height / 2);
-                        }
-                        
-                        playerMetrics.consecutiveDeaths = 0;
-                    }
-                    
-                    if (bricks.every(b => b.destroyed)) {
-                        gameState = 'levelComplete';
-                        setTimeout(() => {
-                            nextLevel();
-                        }, 2000);
-                    }
-                    
-                    break;
-                }
-            }
-        }
-        
         function drawMultiBalls() {
             balls.forEach(extraBall => {
                 ctx.beginPath();
@@ -763,125 +859,25 @@
             });
         }
         
-        // Player Performance Metrics (for AI)
-        const playerMetrics = {
-            ballsLost: 0,
-            bricksHit: 0,
-            totalBallBounces: 0,
-            paddleHits: 0,
-            missedBalls: 0,
-            timeSpentOnLevel: 0,
-            consecutiveDeaths: 0,
-            currentAccuracy: 0,
-            levelStartTime: Date.now(),
-            skillLevel: 'average', // struggling, average, skilled
-            needsHelp: false,
-            recentPerformance: [], // Track last 10 ball interactions
-            avgReactionTime: 0,
-            paddleMissDistance: 0 // How far off paddle was when ball was missed
-        };
-        
-        // AI Performance Analysis System
-        const aiAnalysis = {
-            updateInterval: 1000, // Update every second
-            lastUpdate: Date.now(),
+        function nextLevel() {
+            game.level++;
+            createBricks();
+            ball.reset();
+            paddle.reset();
             
-            analyzePerformance() {
-                const now = Date.now();
-                playerMetrics.timeSpentOnLevel = now - playerMetrics.levelStartTime;
-                
-                // Calculate current accuracy
-                if (playerMetrics.totalBallBounces > 0) {
-                    playerMetrics.currentAccuracy = Math.round((playerMetrics.bricksHit / playerMetrics.totalBallBounces) * 100);
-                }
-                
-                // Determine skill level based on multiple factors
-                this.determineSkillLevel();
-                
-                // Check if player needs help
-                this.checkNeedsHelp();
-                
-                // Update performance history
-                this.updatePerformanceHistory();
-            },
+            // Slightly increase difficulty each level
+            ball.normalSpeed += 0.2;
+            ball.speed = ball.normalSpeed;
             
-            determineSkillLevel() {
-                const accuracy = playerMetrics.currentAccuracy;
-                const consecutiveDeaths = playerMetrics.consecutiveDeaths;
-                const timeOnLevel = playerMetrics.timeSpentOnLevel / 1000; // Convert to seconds
-                const ballsLostRate = playerMetrics.ballsLost / Math.max(1, timeOnLevel / 30); // Balls lost per 30 seconds
-                
-                // Struggling indicators
-                if (accuracy < 30 || consecutiveDeaths >= 3 || ballsLostRate > 2) {
-                    playerMetrics.skillLevel = 'struggling';
-                } 
-                // Skilled indicators
-                else if (accuracy > 60 && consecutiveDeaths === 0 && ballsLostRate < 0.5) {
-                    playerMetrics.skillLevel = 'skilled';
-                }
-                // Average (default)
-                else {
-                    playerMetrics.skillLevel = 'average';
-                }
-            },
+            // Increase paddle speed slightly too
+            paddle.speed += 0.2;
             
-            checkNeedsHelp() {
-                const struggling = playerMetrics.skillLevel === 'struggling';
-                const longTimeOnLevel = playerMetrics.timeSpentOnLevel > 120000; // 2 minutes
-                const lowProgress = playerMetrics.bricksHit < 10 && playerMetrics.timeSpentOnLevel > 60000; // Less than 10 bricks in 1 minute
-                
-                playerMetrics.needsHelp = struggling || longTimeOnLevel || lowProgress;
-            },
+            gameState = 'playing';
+            playerMetrics.levelStartTime = Date.now();
             
-            updatePerformanceHistory() {
-                // Track recent performance for trend analysis
-                const currentPerformance = {
-                    timestamp: Date.now(),
-                    accuracy: playerMetrics.currentAccuracy,
-                    consecutiveDeaths: playerMetrics.consecutiveDeaths,
-                    skillLevel: playerMetrics.skillLevel
-                };
-                
-                playerMetrics.recentPerformance.push(currentPerformance);
-                
-                // Keep only last 10 entries
-                if (playerMetrics.recentPerformance.length > 10) {
-                    playerMetrics.recentPerformance.shift();
-                }
-            },
-            
-            trackPaddleMiss(ballX, paddleX, paddleWidth) {
-                // Calculate how far the ball was from the paddle center when missed
-                const paddleCenter = paddleX + paddleWidth / 2;
-                const missDistance = Math.abs(ballX - paddleCenter);
-                
-                // Update average miss distance (for AI assistance calibration)
-                if (playerMetrics.paddleMissDistance === 0) {
-                    playerMetrics.paddleMissDistance = missDistance;
-                } else {
-                    playerMetrics.paddleMissDistance = (playerMetrics.paddleMissDistance + missDistance) / 2;
-                }
-            },
-            
-            getAssistanceLevel() {
-                if (playerMetrics.skillLevel === 'struggling') {
-                    return 'active'; // Noticeable help
-                } else if (playerMetrics.skillLevel === 'average' && playerMetrics.needsHelp) {
-                    return 'subtle'; // Minor help
-                } else {
-                    return 'none'; // No help needed
-                }
-            },
-            
-            shouldIncreasePowerUpRate() {
-                return playerMetrics.skillLevel === 'struggling' || 
-                       (playerMetrics.consecutiveDeaths >= 2 && playerMetrics.currentAccuracy < 40);
-            },
-            
-            shouldDecreasePowerUpRate() {
-                return playerMetrics.skillLevel === 'skilled' && playerMetrics.currentAccuracy > 70;
-            }
-        };
+            // Reset consecutive deaths for new level
+            playerMetrics.consecutiveDeaths = 0;
+        }
         
         // Event Listeners
         document.addEventListener('keydown', (e) => {
@@ -964,10 +960,6 @@
             aiAnalysis.lastUpdate = Date.now();
             
             updateUI();
-        }
-        
-        function restartGame() {
-            startGame();
         }
         
         function updateUI() {
@@ -1140,6 +1132,8 @@
                 drawBricks();
                 paddle.draw();
                 ball.draw();
+                drawMultiBalls();
+                drawPowerUps();
                 drawParticles();
                 drawPaused();
             }
