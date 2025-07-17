@@ -40,29 +40,190 @@
         }
         
         .power-up-timer {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 12px;
             border-radius: 5px;
             margin: 5px;
             display: inline-block;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Accessibility styles */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        #audioControls {
+            margin-bottom: 10px;
+        }
+        
+        #audioToggle {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        #audioToggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        #audioToggle:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+        
+        #gameCanvas:focus {
+            outline: 3px solid #4CAF50;
+            outline-offset: 2px;
+        }
+        
+        /* Improve contrast for better accessibility */
+        #instructions {
+            color: #ccc;
+            font-size: 16px;
+        }
+        
+        #gameInfo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        /* Sprint Controls Styling */
+        #sprintControls {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            max-width: 800px;
+        }
+        
+        #sprintControls h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .control-group {
+            margin: 10px 15px;
+            display: inline-block;
+            vertical-align: top;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        .control-group input {
+            padding: 5px 8px;
+            border-radius: 3px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            width: 80px;
+            font-size: 14px;
+        }
+        
+        .control-group input:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 1px;
+        }
+        
+        .control-buttons {
+            margin-top: 15px;
+        }
+        
+        .control-buttons button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .control-buttons button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-buttons button:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
         }
     </style>
 </head>
 <body>
     <h1>Intelligent Adaptive Brick Ball</h1>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
     
-    <div id="gameInfo">
+    <!-- Screen reader announcements -->
+    <div id="gameAnnouncements" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+    <div id="gameStatus" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+    
+    <!-- Audio controls -->
+    <div id="audioControls">
+        <button id="audioToggle" type="button" aria-pressed="true">🔊 Sound: ON</button>
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="600" 
+            role="application" 
+            aria-label="Brick Ball Game - Use arrow keys to move paddle, space to pause, enter or click to launch ball"
+            aria-describedby="gameInfo instructions"
+            tabindex="0"></canvas>
+    
+    <div id="gameInfo" role="status" aria-live="polite">
         <div>Score: <span id="score">0</span></div>
         <div>Lives: <span id="lives">3</span></div>
         <div>Level: <span id="level">1</span></div>
         <div>Accuracy: <span id="accuracy">0%</span></div>
     </div>
     
-    <div id="powerUps"></div>
+    <div id="powerUps" aria-live="polite" aria-label="Active power-ups"></div>
     
     <div id="instructions">
-        Use ← → arrow keys or mouse to move paddle | SPACE to pause | Click to start
+        Use ← → arrow keys or mouse to move paddle | SPACE to pause | ENTER or Click to launch ball/start game | SHIFT to sprint
+    </div>
+    
+    <div id="sprintControls">
+        <h3>Sprint Configuration</h3>
+        <div class="control-group">
+            <label for="accelerationPeriod">Acceleration Period (ms):</label>
+            <input type="number" id="accelerationPeriod" value="500" min="100" max="2000" step="50">
+        </div>
+        <div class="control-group">
+            <label for="defaultSpeed">Default Speed:</label>
+            <input type="number" id="defaultSpeed" value="5" min="1" max="20" step="0.5">
+        </div>
+        <div class="control-group">
+            <label for="topSpeed">Top Speed:</label>
+            <input type="number" id="topSpeed" value="50" min="10" max="200" step="5">
+        </div>
+        <div class="control-buttons">
+            <button id="applySprintConfig">Apply Settings</button>
+            <button id="resetSprintConfig">Reset to Defaults</button>
+        </div>
     </div>
 
     <script>
@@ -73,6 +234,151 @@
         // Game State
         let gameState = 'menu'; // menu, playing, paused, gameOver, levelComplete
         let animationId;
+        
+        // Accessibility System
+        const accessibility = {
+            audioEnabled: true,
+            audioContext: null,
+            
+            init() {
+                // Initialize audio context on first user interaction
+                document.addEventListener('click', this.initAudio.bind(this), { once: true });
+                document.addEventListener('keydown', this.initAudio.bind(this), { once: true });
+                
+                // Setup audio toggle button
+                const audioToggle = document.getElementById('audioToggle');
+                audioToggle.addEventListener('click', this.toggleAudio.bind(this));
+            },
+            
+            initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.log('Audio not supported');
+                    this.audioEnabled = false;
+                }
+            },
+            
+            toggleAudio() {
+                this.audioEnabled = !this.audioEnabled;
+                const button = document.getElementById('audioToggle');
+                button.textContent = this.audioEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+                button.setAttribute('aria-pressed', this.audioEnabled.toString());
+            },
+            
+            playSound(frequency, duration = 100, type = 'sine') {
+                if (!this.audioEnabled || !this.audioContext) return;
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration / 1000);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration / 1000);
+            },
+            
+            announce(message, priority = 'polite') {
+                const element = priority === 'assertive' ? 
+                    document.getElementById('gameStatus') : 
+                    document.getElementById('gameAnnouncements');
+                
+                element.textContent = message;
+                
+                // Clear after a delay to allow for new announcements
+                setTimeout(() => {
+                    if (element.textContent === message) {
+                        element.textContent = '';
+                    }
+                }, 3000);
+            },
+            
+            announceGameState(state) {
+                switch (state) {
+                    case 'menu':
+                        this.announce('Game menu. Click or press Enter to start playing.');
+                        break;
+                    case 'playing':
+                        this.announce('Game started. Use arrow keys to move paddle.');
+                        break;
+                    case 'paused':
+                        this.announce('Game paused. Press Space to continue.', 'assertive');
+                        break;
+                    case 'ballLost':
+                        this.announce(`Ball lost! ${game.lives} lives remaining.`, 'assertive');
+                        this.playSound(200, 300, 'sawtooth'); // Low warning sound
+                        break;
+                    case 'gameOver':
+                        this.announce(`Game Over! Final score: ${game.score}. Level reached: ${game.level}.`, 'assertive');
+                        this.playSound(150, 500, 'triangle'); // Game over sound
+                        break;
+                    case 'levelComplete':
+                        this.announce(`Level ${game.level} complete! Advancing to next level.`);
+                        this.playSound(800, 200); // Success sound
+                        break;
+                }
+            },
+            
+            announcePowerUp(powerUpName) {
+                this.announce(`Power-up collected: ${powerUpName}`);
+                this.playSound(600, 150); // Power-up sound
+            },
+            
+            announceBrickHit(brickColor, points) {
+                // Only announce occasionally to avoid spam
+                if (Math.random() < 0.1) {
+                    this.announce(`${brickColor} brick hit for ${points} points`);
+                }
+                this.playSound(400 + (points * 5), 50); // Pitch varies with points
+            },
+            
+            announcePaddleHit() {
+                this.playSound(300, 50, 'square'); // Paddle hit sound
+            },
+            
+            announceWallBounce() {
+                this.playSound(250, 30, 'square'); // Wall bounce sound
+            }
+        };
+        
+        // Sprint Configuration System
+        const sprintConfig = {
+            accelerationPeriodMs: 500,
+            defaultSpeed: 5,
+            topSpeed: 50,
+            
+            // Calculate multiplier dynamically
+            get speedMultiplier() {
+                return this.topSpeed / this.defaultSpeed;
+            }
+        };
+        
+        // Sprint State Management
+        const sprintState = {
+            isActive: false,
+            isAccelerating: false,
+            isDecelerating: false,
+            startTime: 0,
+            ballStates: new Map(), // track each ball's original speed
+            currentOscillator: null,
+            audioUpdateTimer: null
+        };
+        
+        // Sprint Audio Configuration
+        const sprintAudio = {
+            baseFrequency: 300,
+            maxFrequency: 800,
+            oscillatorType: 'sine',
+            volume: 0.1,
+            updateInterval: 50
+        };
         
         // Game Objects
         const game = {
@@ -284,11 +590,13 @@
                 if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) {
                     ball.dx = -ball.dx;
                     ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x));
+                    accessibility.announceWallBounce();
                 }
                 
                 if (ball.y - ball.radius <= 0) {
                     ball.dy = -ball.dy;
                     ball.y = ball.radius;
+                    accessibility.announceWallBounce();
                 }
                 
                 // Paddle collision
@@ -308,6 +616,7 @@
                     // Track paddle hits for AI
                     playerMetrics.paddleHits++;
                     playerMetrics.totalBallBounces++;
+                    accessibility.announcePaddleHit();
                 }
                 
                 // Remove balls that fall off bottom
@@ -356,6 +665,7 @@
             
             if (game.lives <= 0) {
                 gameState = 'gameOver';
+                accessibility.announceGameState('gameOver');
                 // Show cursor when game ends
                 canvas.classList.remove('playing');
                 return;
@@ -363,6 +673,7 @@
             
             // Brief pause before respawn
             gameState = 'ballLost';
+            accessibility.announceGameState('ballLost');
             setTimeout(() => {
                 if (game.lives > 0) {
                     // Add new ball on paddle
@@ -375,6 +686,198 @@
         function resetBalls() {
             balls.length = 0;
             balls.push(createBall(paddle.x + paddle.width / 2, paddle.y - 8, true));
+        }
+        
+        // Sprint System Functions
+        function initializeSprintControls() {
+            // Set initial values from config
+            document.getElementById('accelerationPeriod').value = sprintConfig.accelerationPeriodMs;
+            document.getElementById('defaultSpeed').value = sprintConfig.defaultSpeed;
+            document.getElementById('topSpeed').value = sprintConfig.topSpeed;
+            
+            // Add event listeners
+            document.getElementById('applySprintConfig').addEventListener('click', applySprintSettings);
+            document.getElementById('resetSprintConfig').addEventListener('click', resetSprintSettings);
+        }
+        
+        function applySprintSettings() {
+            sprintConfig.accelerationPeriodMs = parseInt(document.getElementById('accelerationPeriod').value);
+            sprintConfig.defaultSpeed = parseFloat(document.getElementById('defaultSpeed').value);
+            sprintConfig.topSpeed = parseFloat(document.getElementById('topSpeed').value);
+            
+            // Update existing balls if game is running
+            updateExistingBallSpeeds();
+            
+            console.log('Sprint settings applied:', sprintConfig);
+        }
+        
+        function resetSprintSettings() {
+            sprintConfig.accelerationPeriodMs = 500;
+            sprintConfig.defaultSpeed = 5;
+            sprintConfig.topSpeed = 50;
+            
+            // Update UI
+            initializeSprintControls();
+            updateExistingBallSpeeds();
+        }
+        
+        function updateExistingBallSpeeds() {
+            // Update normalSpeed for existing balls based on new default speed
+            balls.forEach(ball => {
+                if (ball.normalSpeed === 5) { // Only update if it's still at default
+                    ball.normalSpeed = sprintConfig.defaultSpeed;
+                    if (!sprintState.isActive) {
+                        ball.speed = ball.normalSpeed;
+                    }
+                }
+            });
+        }
+        
+        function handleSprintStart() {
+            if (sprintState.isActive || gameState !== 'playing') return;
+            
+            sprintState.isActive = true;
+            sprintState.isAccelerating = true;
+            sprintState.isDecelerating = false;
+            sprintState.startTime = performance.now();
+            sprintState.ballStates.clear();
+            
+            // Record original speeds for all balls
+            balls.forEach((ball, index) => {
+                if (!ball.onPaddle) {
+                    sprintState.ballStates.set(index, ball.speed);
+                }
+            });
+            
+            // Start acceleration audio
+            startSprintAudio(true);
+        }
+        
+        function handleSprintEnd() {
+            if (!sprintState.isActive || sprintState.isDecelerating) return;
+            
+            sprintState.isAccelerating = false;
+            sprintState.isDecelerating = true;
+            sprintState.startTime = performance.now();
+            
+            // Start deceleration audio
+            startSprintAudio(false);
+        }
+        
+        function updateSprintSystem(deltaTime) {
+            if (!sprintState.isActive) return;
+            
+            const currentTime = performance.now();
+            const elapsed = currentTime - sprintState.startTime;
+            const progress = Math.min(elapsed / sprintConfig.accelerationPeriodMs, 1);
+            
+            if (sprintState.isAccelerating) {
+                // Accelerate all balls
+                balls.forEach((ball, index) => {
+                    if (!ball.onPaddle && sprintState.ballStates.has(index)) {
+                        const originalSpeed = sprintState.ballStates.get(index);
+                        const targetSpeed = originalSpeed * sprintConfig.speedMultiplier;
+                        ball.speed = originalSpeed + (targetSpeed - originalSpeed) * progress;
+                        
+                        // Update velocity components proportionally
+                        const speedRatio = ball.speed / originalSpeed;
+                        ball.dx = (ball.dx / Math.abs(ball.dx || 1)) * Math.abs(ball.dx) * speedRatio;
+                        ball.dy = (ball.dy / Math.abs(ball.dy || 1)) * Math.abs(ball.dy) * speedRatio;
+                    }
+                });
+                
+                if (progress >= 1) {
+                    sprintState.isAccelerating = false;
+                    // Continue at top speed
+                }
+            } else if (sprintState.isDecelerating) {
+                // Decelerate all balls
+                balls.forEach((ball, index) => {
+                    if (!ball.onPaddle && sprintState.ballStates.has(index)) {
+                        const originalSpeed = sprintState.ballStates.get(index);
+                        const currentTopSpeed = originalSpeed * sprintConfig.speedMultiplier;
+                        ball.speed = currentTopSpeed - (currentTopSpeed - originalSpeed) * progress;
+                        
+                        // Update velocity components proportionally
+                        const speedRatio = ball.speed / currentTopSpeed;
+                        ball.dx = (ball.dx / Math.abs(ball.dx || 1)) * Math.abs(ball.dx) * speedRatio;
+                        ball.dy = (ball.dy / Math.abs(ball.dy || 1)) * Math.abs(ball.dy) * speedRatio;
+                    }
+                });
+                
+                if (progress >= 1) {
+                    // Sprint complete
+                    sprintState.isActive = false;
+                    sprintState.isDecelerating = false;
+                    sprintState.ballStates.clear();
+                    stopSprintAudio();
+                }
+            }
+        }
+        
+        function startSprintAudio(isAccelerating) {
+            if (!accessibility.audioEnabled || !accessibility.audioContext) return;
+            
+            // Stop any existing sprint audio
+            stopSprintAudio();
+            
+            // Create new oscillator
+            sprintState.currentOscillator = accessibility.audioContext.createOscillator();
+            const gainNode = accessibility.audioContext.createGain();
+            
+            sprintState.currentOscillator.connect(gainNode);
+            gainNode.connect(accessibility.audioContext.destination);
+            
+            sprintState.currentOscillator.type = sprintAudio.oscillatorType;
+            sprintState.currentOscillator.frequency.value = isAccelerating ? 
+                sprintAudio.baseFrequency : sprintAudio.maxFrequency;
+            
+            gainNode.gain.setValueAtTime(sprintAudio.volume, accessibility.audioContext.currentTime);
+            
+            sprintState.currentOscillator.start();
+            
+            // Start audio update timer
+            sprintState.audioUpdateTimer = setInterval(() => {
+                updateSprintAudioPitch(isAccelerating);
+            }, sprintAudio.updateInterval);
+        }
+        
+        function updateSprintAudioPitch(isAccelerating) {
+            if (!sprintState.currentOscillator || !sprintState.isActive) return;
+            
+            const currentTime = performance.now();
+            const elapsed = currentTime - sprintState.startTime;
+            const progress = Math.min(elapsed / sprintConfig.accelerationPeriodMs, 1);
+            
+            let frequency;
+            if (isAccelerating) {
+                frequency = sprintAudio.baseFrequency + 
+                    (sprintAudio.maxFrequency - sprintAudio.baseFrequency) * progress;
+            } else {
+                frequency = sprintAudio.maxFrequency - 
+                    (sprintAudio.maxFrequency - sprintAudio.baseFrequency) * progress;
+            }
+            
+            sprintState.currentOscillator.frequency.setValueAtTime(
+                frequency, 
+                accessibility.audioContext.currentTime
+            );
+        }
+        
+        function stopSprintAudio() {
+            if (sprintState.currentOscillator) {
+                try {
+                    sprintState.currentOscillator.stop();
+                } catch (e) {
+                    // Oscillator may already be stopped
+                }
+                sprintState.currentOscillator = null;
+            }
+            
+            if (sprintState.audioUpdateTimer) {
+                clearInterval(sprintState.audioUpdateTimer);
+                sprintState.audioUpdateTimer = null;
+            }
         }
         
         // Brick System
@@ -577,6 +1080,7 @@
                         game.score += brick.points;
                         
                         createParticles(brick.x + brick.width / 2, brick.y + brick.height / 2, brick.color);
+                        accessibility.announceBrickHit(brick.name, brick.points);
                         
                         // Dynamic power-up drop rate based on player performance
                         let dropRate = 0.15; // Base 15% chance
@@ -596,6 +1100,7 @@
                     
                     if (bricks.every(b => b.destroyed)) {
                         gameState = 'levelComplete';
+                        accessibility.announceGameState('levelComplete');
                         setTimeout(() => {
                             nextLevel();
                         }, 2000);
@@ -687,13 +1192,24 @@
         function drawPowerUps() {
             // Draw falling power-ups
             powerUps.forEach(powerUp => {
+                // Draw power-up background with better contrast
                 ctx.fillStyle = powerUp.config.color;
                 ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
                 
-                // Draw letter
-                ctx.fillStyle = '#fff';
-                ctx.font = '14px Arial';
+                // Add dark border for better definition
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+                
+                // Draw letter with text shadow for better contrast
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
+                // Text shadow
+                ctx.fillText(powerUp.config.letter, powerUp.x + powerUp.width / 2 + 1, powerUp.y + 15);
+                
+                // Main text in white
+                ctx.fillStyle = '#fff';
                 ctx.fillText(powerUp.config.letter, powerUp.x + powerUp.width / 2, powerUp.y + 14);
             });
         }
@@ -703,6 +1219,7 @@
             
             // Apply effect
             config.effect();
+            accessibility.announcePowerUp(config.name);
             
             // Add to active power-ups if it has a duration
             if (config.duration > 0) {
@@ -775,10 +1292,17 @@
                 launchBall();
             }
             
+            // SHIFT key starts sprint
+            if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && gameState === 'playing') {
+                e.preventDefault();
+                handleSprintStart();
+            }
+            
             if (e.code === 'Space') {
                 e.preventDefault();
                 if (gameState === 'playing') {
                     gameState = 'paused';
+                    accessibility.announceGameState('paused');
                 } else if (gameState === 'paused') {
                     gameState = 'playing';
                 }
@@ -787,6 +1311,12 @@
         
         document.addEventListener('keyup', (e) => {
             game.keys[e.code] = false;
+            
+            // SHIFT key ends sprint
+            if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && gameState === 'playing') {
+                e.preventDefault();
+                handleSprintEnd();
+            }
         });
         
         canvas.addEventListener('mousemove', (e) => {
@@ -852,6 +1382,7 @@
             playerMetrics.recentPerformance = [];
             aiAnalysis.lastUpdate = Date.now();
             
+            accessibility.announceGameState('playing');
             updateUI();
         }
         
@@ -1035,6 +1566,12 @@
             
             animationId = requestAnimationFrame(gameLoop);
         }
+        
+        // Initialize accessibility system
+        accessibility.init();
+        
+        // Announce initial menu state
+        accessibility.announceGameState('menu');
         
         // Start the game
         gameLoop(0);

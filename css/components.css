@@ -1,0 +1,132 @@
+/* UI Components Styles */
+
+/* Sprint Controls */
+#sprintControls {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    max-width: 800px;
+}
+
+#sprintControls h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.control-group {
+    margin: 10px 15px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #ccc;
+}
+
+.control-group input {
+    padding: 5px 8px;
+    border-radius: 3px;
+    border: 1px solid #444;
+    background: #333;
+    color: white;
+    width: 80px;
+    font-size: 14px;
+}
+
+.control-group input:focus {
+    outline: 2px solid #4CAF50;
+    outline-offset: 1px;
+}
+
+.control-buttons {
+    margin-top: 15px;
+}
+
+.control-buttons button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 5px;
+    transition: background-color 0.2s;
+}
+
+.control-buttons button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.control-buttons button:focus {
+    outline: 2px solid #4CAF50;
+    outline-offset: 2px;
+}
+
+/* Button States */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Form Elements */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #sprintControls {
+        max-width: 100%;
+        margin: 20px 10px;
+        padding: 10px;
+    }
+    
+    .control-group {
+        display: block;
+        margin: 10px 0;
+    }
+    
+    .control-group input {
+        width: 100px;
+    }
+    
+    .control-buttons button {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "...";
+    animation: loading 1s infinite;
+}
+
+@keyframes loading {
+    0%, 33% { content: "..."; }
+    34%, 66% { content: ".."; }
+    67%, 100% { content: "."; }
+}
