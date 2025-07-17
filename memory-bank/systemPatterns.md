@@ -86,6 +86,11 @@ Check Context → Execute Task → Document Changes → Commit Changes → Updat
 Plan Phases → Execute Phase → Document Phase → Commit Phase → Next Phase
 ```
 
+### Git Commit Handling
+```
+Execute Commit → Wait Max 3 Seconds → Continue (Assume Success)
+```
+
 ### Memory Bank Updates
 ```
 Trigger Event → Review ALL Files → Update Relevant Files → Verify Consistency
@@ -133,3 +138,4 @@ User Request? → Review ALL files, update as needed
 - **Verification Steps**: Context verification before work begins
 - **Source Control**: All task completions require git commits with descriptive messages
 - **Phase Discipline**: When tasks have phases, each phase must be committed individually
+- **Commit Timeout**: If git commit takes >3 seconds, continue as though completed

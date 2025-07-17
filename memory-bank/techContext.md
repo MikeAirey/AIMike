@@ -101,6 +101,11 @@ complete task → verify results → git add → git commit with descriptive mes
 plan phases → execute phase → document phase progress → git commit phase → next phase
 ```
 
+### Git Commit Timeout Handling
+```
+execute git commit → wait max 3 seconds → if no response, continue as completed
+```
+
 ## Performance Considerations
 
 ### Reading Efficiency
@@ -152,6 +157,7 @@ plan phases → execute phase → document phase progress → git commit phase �
 - **Error Handling**: Graceful handling of missing or corrupt files
 - **Commit Discipline**: All changes tracked in git with meaningful commit messages
 - **Phase Tracking**: Each development phase committed individually for granular progress history
+- **Commit Timeout**: If git commit takes >3 seconds, continue as though completed
 
 ## Future Considerations
 
